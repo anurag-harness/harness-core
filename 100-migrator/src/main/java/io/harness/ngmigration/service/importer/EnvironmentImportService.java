@@ -10,48 +10,55 @@ package io.harness.ngmigration.service.importer;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
-import io.harness.exception.InvalidRequestException;
 import io.harness.ngmigration.beans.DiscoverEntityInput;
 import io.harness.ngmigration.beans.DiscoveryInput;
+import io.harness.ngmigration.dto.EnvironmentFilter;
 import io.harness.ngmigration.dto.ImportDTO;
-import io.harness.ngmigration.dto.ServiceFilter;
 import io.harness.ngmigration.service.DiscoveryService;
+import io.harness.persistence.HPersistence;
 
-import software.wings.beans.Service;
+import software.wings.beans.Environment;
+import software.wings.beans.Environment.EnvironmentKeys;
 import software.wings.ngmigration.DiscoveryResult;
 import software.wings.ngmigration.NGMigrationEntityType;
-import software.wings.service.intfc.ServiceResourceService;
 
 import com.google.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @OwnedBy(HarnessTeam.CDC)
-public class ServiceImportService implements ImportService {
+public class EnvironmentImportService implements ImportService {
   @Inject DiscoveryService discoveryService;
-  @Inject ServiceResourceService serviceResourceService;
+  @Inject HPersistence hPersistence;
 
   public DiscoveryResult discover(ImportDTO importDTO) {
-    ServiceFilter filter = (ServiceFilter) importDTO.getFilter();
+    EnvironmentFilter filter = (EnvironmentFilter) importDTO.getFilter();
     String accountId = importDTO.getAccountIdentifier();
     String appId = filter.getAppId();
 
-    List<String> serviceIds = filter.getIds();
-    if (EmptyPredicate.isEmpty(serviceIds)) {
-      List<Service> services = serviceResourceService.findServicesByAppInternal(appId);
-      if (EmptyPredicate.isEmpty(services)) {
-        throw new InvalidRequestException("No services found for given app");
+    List<String> environmentIds = filter.getIds();
+    if (EmptyPredicate.isEmpty(environmentIds)) {
+      List<Environment> environments = hPersistence.createQuery(Environment.class)
+                                           .filter(Environment.ACCOUNT_ID_KEY, accountId)
+                                           .filter(EnvironmentKeys.appId, appId)
+                                           .project(EnvironmentKeys.uuid, true)
+                                           .asList();
+      if (EmptyPredicate.isNotEmpty(environments)) {
+        environmentIds = environments.stream().map(Environment::getUuid).collect(Collectors.toList());
       }
-      serviceIds = services.stream().map(Service::getUuid).collect(Collectors.toList());
     }
+    if (EmptyPredicate.isEmpty(environmentIds)) {
+      return null;
+    }
+
     return discoveryService.discoverMulti(accountId,
         DiscoveryInput.builder()
-            .entities(serviceIds.stream()
+            .entities(environmentIds.stream()
                           .map(id
                               -> DiscoverEntityInput.builder()
                                      .entityId(id)
                                      .appId(appId)
-                                     .type(NGMigrationEntityType.SERVICE)
+                                     .type(NGMigrationEntityType.ENVIRONMENT)
                                      .build())
                           .collect(Collectors.toList()))
             .exportImage(false)
