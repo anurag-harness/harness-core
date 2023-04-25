@@ -49,7 +49,9 @@ import io.harness.cdng.artifact.resources.ecr.service.EcrResourceService;
 import io.harness.cdng.artifact.resources.gcr.dtos.GcrBuildDetailsDTO;
 import io.harness.cdng.artifact.resources.gcr.dtos.GcrRequestDTO;
 import io.harness.cdng.artifact.resources.gcr.service.GcrResourceService;
+import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARBuildDetailsDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARResponseDTO;
+import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRequestDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.service.GARResourceService;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusBuildDetailsDTO;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusRequestDTO;
@@ -715,6 +717,74 @@ public class ArtifactResourceUtils {
 
     return garResourceService.getBuildDetails(connectorRef, resolvedRegion, resolvedRepositoryName, resolvedProject,
         resolvedPackage, version, versionRegex, orgIdentifier, projectIdentifier);
+  }
+
+  public GARBuildDetailsDTO getLastSuccessfulBuildV2GAR(String gcpConnectorIdentifier, String region,
+      String repositoryName, String project, String pkg, String accountId, String orgIdentifier,
+      String projectIdentifier, String pipelineIdentifier, GarRequestDTO garRequestDTO, String fqnPath,
+      String serviceRef, GitEntityFindInfoDTO gitEntityBasicInfo) {
+    if (StringUtils.isNotBlank(serviceRef)) {
+      final ArtifactConfig artifactSpecFromService =
+          locateArtifactInService(accountId, orgIdentifier, projectIdentifier, serviceRef, fqnPath);
+
+      GoogleArtifactRegistryConfig googleArtifactRegistryConfig =
+          (GoogleArtifactRegistryConfig) artifactSpecFromService;
+
+      if (isEmpty(garRequestDTO.getTag())) {
+        garRequestDTO.setTag((String) googleArtifactRegistryConfig.getVersion().fetchFinalValue());
+      }
+
+      if (isBlank(gcpConnectorIdentifier)) {
+        gcpConnectorIdentifier = (String) googleArtifactRegistryConfig.getConnectorRef().fetchFinalValue();
+      }
+
+      if (isBlank(repositoryName)) {
+        repositoryName = (String) googleArtifactRegistryConfig.getRepositoryName().fetchFinalValue();
+      }
+
+      if (isBlank(region)) {
+        region = (String) googleArtifactRegistryConfig.getRegion().fetchFinalValue();
+      }
+
+      if (isBlank(pkg)) {
+        pkg = (String) googleArtifactRegistryConfig.getPkg().fetchFinalValue();
+      }
+
+      if (isBlank(project)) {
+        project = (String) googleArtifactRegistryConfig.getProject().fetchFinalValue();
+      }
+
+      if (isEmpty(garRequestDTO.getTagRegex())) {
+        garRequestDTO.setTagRegex((String) googleArtifactRegistryConfig.getVersionRegex().fetchFinalValue());
+      }
+    }
+
+    repositoryName = getResolvedFieldValue(accountId, orgIdentifier, projectIdentifier, pipelineIdentifier,
+        garRequestDTO.getRuntimeInputYaml(), repositoryName, fqnPath, gitEntityBasicInfo, serviceRef);
+
+    gcpConnectorIdentifier = getResolvedFieldValue(accountId, orgIdentifier, projectIdentifier, pipelineIdentifier,
+        garRequestDTO.getRuntimeInputYaml(), gcpConnectorIdentifier, fqnPath, gitEntityBasicInfo, serviceRef);
+
+    region = getResolvedFieldValue(accountId, orgIdentifier, projectIdentifier, pipelineIdentifier,
+        garRequestDTO.getRuntimeInputYaml(), region, fqnPath, gitEntityBasicInfo, serviceRef);
+
+    garRequestDTO.setTag(getResolvedFieldValue(accountId, orgIdentifier, projectIdentifier, pipelineIdentifier,
+        garRequestDTO.getRuntimeInputYaml(), garRequestDTO.getTag(), fqnPath, gitEntityBasicInfo, serviceRef));
+
+    project = getResolvedFieldValue(accountId, orgIdentifier, projectIdentifier, pipelineIdentifier,
+        garRequestDTO.getRuntimeInputYaml(), project, fqnPath, gitEntityBasicInfo, serviceRef);
+
+    IdentifierRef connectorRef =
+        IdentifierRefHelper.getIdentifierRef(gcpConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
+
+    pkg = getResolvedFieldValue(accountId, orgIdentifier, projectIdentifier, pipelineIdentifier,
+        garRequestDTO.getRuntimeInputYaml(), pkg, fqnPath, gitEntityBasicInfo, serviceRef);
+
+    garRequestDTO.setTagRegex(getResolvedFieldValue(accountId, orgIdentifier, projectIdentifier, pipelineIdentifier,
+        garRequestDTO.getRuntimeInputYaml(), garRequestDTO.getTagRegex(), fqnPath, gitEntityBasicInfo, serviceRef));
+
+    return garResourceService.getLastSuccessfulBuild(
+        connectorRef, region, repositoryName, project, pkg, garRequestDTO, orgIdentifier, projectIdentifier);
   }
 
   public ArtifactoryImagePathsDTO getArtifactoryImagePath(String repositoryType, String artifactoryConnectorIdentifier,

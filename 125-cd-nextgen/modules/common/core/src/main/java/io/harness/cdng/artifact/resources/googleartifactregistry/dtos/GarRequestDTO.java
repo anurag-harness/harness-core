@@ -7,18 +7,31 @@
 
 package io.harness.cdng.artifact.resources.googleartifactregistry.dtos;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-@Value
+@Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonInclude(NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GARBuildDetailsDTO {
-  String version;
-  Map<String, String> metadata;
+public class GarRequestDTO {
+  /** Pass to get the build number*/
+  String tag;
+
+  /** Pass to get the last successful build matching this regex.*/
+  String tagRegex;
+
+  /** List of tags to get the labels for.*/
+  List<String> tagsList;
+
+  /** Runtime input Yaml for expression resolution.*/
+  String runtimeInputYaml;
 }

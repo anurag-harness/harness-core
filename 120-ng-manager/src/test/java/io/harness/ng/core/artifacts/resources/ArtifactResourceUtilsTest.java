@@ -59,7 +59,9 @@ import io.harness.cdng.artifact.resources.ecr.service.EcrResourceService;
 import io.harness.cdng.artifact.resources.gcr.dtos.GcrBuildDetailsDTO;
 import io.harness.cdng.artifact.resources.gcr.dtos.GcrRequestDTO;
 import io.harness.cdng.artifact.resources.gcr.service.GcrResourceService;
+import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARBuildDetailsDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARResponseDTO;
+import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRequestDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.service.GARResourceService;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusBuildDetailsDTO;
 import io.harness.cdng.artifact.resources.nexus.dtos.NexusRequestDTO;
@@ -137,9 +139,11 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
   private static final String CONNECTOR_REF = "connectorRef";
   private static final String IMAGE = "image";
   private static final String HOST = "host";
+  private static final String PKG = "pkg";
   private static final String SUBSCRIPTION = "subscription";
   private static final String REGISTRY = "registry";
   private static final String PORT = "port";
+  private static final String PROJECT = "project";
   private static final String URL = "url";
   private static final String DOCKER = "docker";
   private static final String IMAGE_2 = "image2";
@@ -150,6 +154,8 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
   private static final String REGION_2 = "region2";
   private static final String PORT_2 = "port2";
   private static final String URL_2 = "url2";
+  private static final String PKG_2 = "pkg2";
+  private static final String PROJECT_2 = "project2";
   private static final String REPO_NAME_2 = "repoName2";
   private static final String pipelineYamlWithoutTemplates = "pipeline:\n"
       + "    name: image expression test\n"
@@ -283,6 +289,12 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
           .tagRegex(VERSION_REGEX)
           .runtimeInputYaml(pipelineYamlWithoutTemplates)
           .build();
+  private static final GarRequestDTO GAR_REQUEST_DTO_2 = GarRequestDTO.builder()
+                                                             .tag(VERSION)
+                                                             .tagRegex(VERSION_REGEX)
+                                                             .runtimeInputYaml(pipelineYamlWithoutTemplates)
+                                                             .build();
+
   private static final GcrBuildDetailsDTO GCR_BUILD_DETAILS_DTO = GcrBuildDetailsDTO.builder().build();
   private static final EcrBuildDetailsDTO ECR_BUILD_DETAILS_DTO = EcrBuildDetailsDTO.builder().build();
   private static final AcrBuildDetailsDTO ACR_BUILD_DETAILS_DTO = AcrBuildDetailsDTO.builder().build();
@@ -291,6 +303,8 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
       ArtifactoryDockerBuildDetailsDTO.builder().build();
   private static final IdentifierRef IDENTIFIER_REF =
       IdentifierRefHelper.getIdentifierRef(CONNECTOR_REF, ACCOUNT_ID, ORG_ID, PROJECT_ID);
+
+  private static final GARBuildDetailsDTO GAR_BUILD_DETAILS_DTO = GARBuildDetailsDTO.builder().build();
 
   @Test
   @Owner(developers = INDER)
@@ -929,6 +943,182 @@ public class ArtifactResourceUtilsTest extends NgManagerTestBase {
     String resolvedImagePath =
         artifactResourceUtils.getResolvedFieldValue("a", "o", "p", "p", "", imagePathInput, "fqn", null, null);
     assertThat(resolvedImagePath).isEqualTo(expectedImagePath);
+  }
+
+  @Test
+  @Owner(developers = ABHISHEK)
+  @Category(UnitTests.class)
+  public void testFetLastSuccessfulBuildV2GAR_ValuesFromConfig() {
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    GoogleArtifactRegistryConfig googleArtifactRegistryConfig =
+        GoogleArtifactRegistryConfig.builder()
+            .connectorRef(ParameterField.<String>builder().value(CONNECTOR_REF).build())
+            .project(ParameterField.<String>builder().value(PROJECT).build())
+            .pkg(ParameterField.<String>builder().value(PKG).build())
+            .repositoryName(ParameterField.<String>builder().value(REPO_NAME).build())
+            .region(ParameterField.<String>builder().value(REGION).build())
+            .version(ParameterField.<String>builder().value(VERSION).build())
+            .versionRegex(ParameterField.<String>builder().value(VERSION_REGEX).build())
+            .build();
+
+    doReturn(googleArtifactRegistryConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+
+    doReturn(GAR_BUILD_DETAILS_DTO)
+        .when(garResourceService)
+        .getLastSuccessfulBuild(eq(IDENTIFIER_REF), eq(REGION), eq(REPO_NAME), eq(PROJECT), eq(PKG),
+            eq(GAR_REQUEST_DTO_2), eq(ORG_ID), eq(PROJECT_ID));
+
+    assertThat(
+        spyartifactResourceUtils.getLastSuccessfulBuildV2GAR(null, null, null, null, null, ACCOUNT_ID, ORG_ID,
+            PROJECT_ID, PIPELINE_ID, GarRequestDTO.builder().runtimeInputYaml(pipelineYamlWithoutTemplates).build(),
+            FQN, SERVICE_REF, GIT_ENTITY_FIND_INFO_DTO))
+        .isSameAs(GAR_BUILD_DETAILS_DTO);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, CONNECTOR_REF,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, REGION, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, REPO_NAME,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, PKG, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, PROJECT, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, VERSION, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, VERSION_REGEX,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+  }
+
+  @Test
+  @Owner(developers = ABHISHEK)
+  @Category(UnitTests.class)
+  public void testFetLastSuccessfulBuildV2GAR_ValuesFromParams() {
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    GoogleArtifactRegistryConfig googleArtifactRegistryConfig = GoogleArtifactRegistryConfig.builder().build();
+
+    doReturn(googleArtifactRegistryConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+
+    doReturn(GAR_BUILD_DETAILS_DTO)
+        .when(garResourceService)
+        .getLastSuccessfulBuild(eq(IDENTIFIER_REF), eq(REGION), eq(REPO_NAME), eq(PROJECT), eq(PKG),
+            eq(GAR_REQUEST_DTO_2), eq(ORG_ID), eq(PROJECT_ID));
+
+    assertThat(
+        spyartifactResourceUtils.getLastSuccessfulBuildV2GAR(CONNECTOR_REF, REGION, REPO_NAME, PROJECT, PKG, ACCOUNT_ID,
+            ORG_ID, PROJECT_ID, PIPELINE_ID, GAR_REQUEST_DTO_2, FQN, SERVICE_REF, GIT_ENTITY_FIND_INFO_DTO))
+        .isSameAs(GAR_BUILD_DETAILS_DTO);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, CONNECTOR_REF,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, REGION, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, REPO_NAME,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, PKG, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, PROJECT, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, VERSION, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, VERSION_REGEX,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+  }
+
+  @Test
+  @Owner(developers = ABHISHEK)
+  @Category(UnitTests.class)
+  public void testFetLastSuccessfulBuildV2GAR_ValuesFromResolvedExpression() {
+    ArtifactResourceUtils spyartifactResourceUtils = spy(artifactResourceUtils);
+
+    GoogleArtifactRegistryConfig googleArtifactRegistryConfig =
+        GoogleArtifactRegistryConfig.builder()
+            .version(ParameterField.createValueField(TAG_2))
+            .versionRegex(ParameterField.createValueField(TAG_REGEX_2))
+            .build();
+
+    doReturn(googleArtifactRegistryConfig)
+        .when(spyartifactResourceUtils)
+        .locateArtifactInService(ACCOUNT_ID, ORG_ID, PROJECT_ID, SERVICE_REF, FQN);
+
+    doReturn(CONNECTOR_REF)
+        .when(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates,
+            CONNECTOR_REF_2, FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    doReturn(REGION)
+        .when(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, REGION_2, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    doReturn(REPO_NAME)
+        .when(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, REPO_NAME_2,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    doReturn(PKG)
+        .when(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, PKG_2, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    doReturn(PROJECT)
+        .when(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, PROJECT_2,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    doReturn(VERSION)
+        .when(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, TAG_2, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    doReturn(VERSION_REGEX)
+        .when(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, TAG_REGEX_2,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+
+    doReturn(GAR_BUILD_DETAILS_DTO)
+        .when(garResourceService)
+        .getLastSuccessfulBuild(eq(IDENTIFIER_REF), eq(REGION), eq(REPO_NAME), eq(PROJECT), eq(PKG),
+            eq(GAR_REQUEST_DTO_2), eq(ORG_ID), eq(PROJECT_ID));
+
+    assertThat(spyartifactResourceUtils.getLastSuccessfulBuildV2GAR(CONNECTOR_REF_2, REGION_2, REPO_NAME_2, PROJECT_2,
+                   PKG_2, ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID,
+                   GarRequestDTO.builder().runtimeInputYaml(pipelineYamlWithoutTemplates).build(), FQN, SERVICE_REF,
+                   GIT_ENTITY_FIND_INFO_DTO))
+        .isSameAs(GAR_BUILD_DETAILS_DTO);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates,
+            CONNECTOR_REF_2, FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, REGION_2, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, REPO_NAME_2,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, PKG_2, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, PROJECT_2,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, TAG_2, FQN,
+            GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
+    verify(spyartifactResourceUtils)
+        .getResolvedFieldValue(ACCOUNT_ID, ORG_ID, PROJECT_ID, PIPELINE_ID, pipelineYamlWithoutTemplates, TAG_REGEX_2,
+            FQN, GIT_ENTITY_FIND_INFO_DTO, SERVICE_REF);
   }
 
   @Test
