@@ -3,7 +3,7 @@
 
   },
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.com/object1682412581.json",
+  "$id": "https://example.com/object1682412379.json",
   "title": "Root",
   "type": "object",
   "additionalProperties": false,
@@ -16,12 +16,12 @@
       "title": "Proxy",
       "type": "object",
       "required": [
-        "/snyk"
+        "/jenkins/api"
       ],
       "properties": {
-        "/snyk": {
-          "$id": "#root/proxy//snyk",
-          "title": "/snyk",
+        "/jenkins/api": {
+          "$id": "#root/proxy//jenkins/api",
+          "title": "/jenkins/api",
           "type": "object",
           "required": [
             "target",
@@ -30,23 +30,23 @@
           ],
           "properties": {
             "target": {
-              "$id": "#root/proxy//snyk/target",
+              "$id": "#root/proxy//jenkins/api/target",
               "title": "Target",
               "type": "string",
               "default": "",
               "pattern": "^.*$"
             },
             "pathRewrite": {
-              "$id": "#root/proxy//snyk/pathRewrite",
+              "$id": "#root/proxy//jenkins/api/pathRewrite",
               "title": "Pathrewrite",
               "type": "object",
               "required": [
-                "api/proxy/snyk/?"
+                "api/proxy/jenkins/?"
               ],
               "properties": {
-                "api/proxy/snyk/?": {
-                  "$id": "#root/proxy//snyk/pathRewrite/api/proxy/snyk/?",
-                  "title": "Api/proxy/snyk/?",
+                "api/proxy/jenkins/?": {
+                  "$id": "#root/proxy//jenkins/api/pathRewrite/api/proxy/jenkins/?",
+                  "title": "Api/proxy/jenkins/?",
                   "type": "string",
                   "default": "",
                   "pattern": "^.*$"
@@ -54,23 +54,15 @@
               }
             },
             "headers": {
-              "$id": "#root/proxy//snyk/headers",
+              "$id": "#root/proxy//jenkins/api/headers",
               "title": "Headers",
               "type": "object",
               "required": [
-                "User-Agent",
                 "Authorization"
               ],
               "properties": {
-                "User-Agent": {
-                  "$id": "#root/proxy//snyk/headers/User-Agent",
-                  "title": "User-agent",
-                  "type": "string",
-                  "default": "",
-                  "pattern": "^.*$"
-                },
                 "Authorization": {
-                  "$id": "#root/proxy//snyk/headers/Authorization",
+                  "$id": "#root/proxy//jenkins/api/headers/Authorization",
                   "title": "Authorization",
                   "type": "string",
                   "default": "",
