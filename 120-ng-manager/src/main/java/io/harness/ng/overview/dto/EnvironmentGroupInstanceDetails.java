@@ -12,20 +12,25 @@ import io.harness.ng.core.environment.beans.EnvironmentType;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Value;
 
-@Value
+@Data
 @Builder
-public class EnvironmentInstanceDetails {
-  @NotNull List<EnvironmentInstanceDetail> environmentInstanceDetails;
+public class EnvironmentGroupInstanceDetails {
+  @NotNull List<EnvironmentGroupInstanceDetail> environmentGroupInstanceDetails;
 
   @Value
   @Builder
-  public static class EnvironmentInstanceDetail {
-    @NotNull String envId;
-    String envName;
-    EnvironmentType environmentType;
+  public static class EnvironmentGroupInstanceDetail {
+    @NotNull String id;
+    String name;
+    List<EnvironmentType> environmentTypes;
+    @NotNull Boolean isEnvGroup;
+    @NotNull Boolean isDrift;
     Integer count;
-    @NotNull ArtifactDeploymentDetail artifactDeploymentDetail;
+    List<ArtifactDeploymentDetail> artifactDeploymentDetails;
+    Boolean isRollback;
+    Boolean isRevert;
   }
 }
