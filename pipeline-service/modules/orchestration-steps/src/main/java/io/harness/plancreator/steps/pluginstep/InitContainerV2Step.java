@@ -17,6 +17,7 @@ import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.tasks.TaskCategory;
 import io.harness.pms.contracts.execution.tasks.TaskRequest;
 import io.harness.pms.contracts.plan.PluginCreationResponse;
+import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
 import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
@@ -24,7 +25,10 @@ import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.serializer.KryoSerializer;
 import io.harness.steps.StepUtils;
 import io.harness.steps.container.ContainerStepInitHelper;
+import io.harness.steps.container.execution.ContainerExecutionConfig;
+import io.harness.steps.container.execution.ContainerStepRbacHelper;
 import io.harness.steps.executable.TaskExecutableWithRbac;
+import io.harness.steps.plugin.ContainerStepConstants;
 import io.harness.steps.plugin.InitContainerV2StepInfo;
 import io.harness.steps.plugin.StepInfo;
 import io.harness.supplier.ThrowingSupplier;
@@ -41,8 +45,9 @@ public class InitContainerV2Step implements TaskExecutableWithRbac<InitContainer
   @Inject KryoSerializer kryoSerializer;
   @Inject ContainerStepInitHelper containerStepInitHelper;
   @Inject ContainerStepV2PluginProvider containerStepV2PluginProvider;
+  @Inject ContainerStepRbacHelper containerStepRbacHelper;
+  @Inject ContainerExecutionConfig containerExecutionConfig;
   @Inject ExecutionSweepingOutputService executionSweepingOutputService;
-
   @Inject InitialiseTaskUtils initialiseTaskUtils;
 
   @Override
@@ -52,7 +57,7 @@ public class InitContainerV2Step implements TaskExecutableWithRbac<InitContainer
 
   @Override
   public void validateResources(Ambiance ambiance, InitContainerV2StepInfo stepParameters) {
-    // todo :implement
+    containerStepRbacHelper.validateResources(stepParameters, ambiance);
   }
 
   @Override
@@ -74,7 +79,7 @@ public class InitContainerV2Step implements TaskExecutableWithRbac<InitContainer
 
     String stageId = ambiance.getStageExecutionId();
     List<TaskSelector> taskSelectors = new ArrayList<>();
-
+    consumeExecutionConfig(ambiance);
     initialiseTaskUtils.constructStageDetails(
         ambiance, stepParameters.getIdentifier(), stepParameters.getName(), StepOutcomeGroup.STEP_GROUP.name());
 
@@ -82,5 +87,9 @@ public class InitContainerV2Step implements TaskExecutableWithRbac<InitContainer
     return StepUtils.prepareTaskRequest(ambiance, taskData, kryoSerializer, TaskCategory.DELEGATE_TASK_V2, null, true,
         TaskType.valueOf(taskData.getTaskType()).getDisplayName(), taskSelectors, Scope.PROJECT, EnvironmentType.ALL,
         false, new ArrayList<>(), false, stageId);
+  }
+  private void consumeExecutionConfig(Ambiance ambiance) {
+    executionSweepingOutputService.consume(ambiance, ContainerStepConstants.CONTAINER_EXECUTION_CONFIG,
+        containerExecutionConfig, StepCategory.STEP_GROUP.name());
   }
 }
