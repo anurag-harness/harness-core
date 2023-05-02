@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.template.beans.yaml;
+package io.harness.template.resources.beans.yaml;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 

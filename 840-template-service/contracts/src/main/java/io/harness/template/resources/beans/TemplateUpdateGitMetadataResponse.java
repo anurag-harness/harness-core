@@ -5,9 +5,9 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.template.beans;
+package io.harness.template.resources.beans;
 
-import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
 
@@ -22,11 +22,10 @@ import lombok.Value;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@ApiModel("TemplateMoveConfigResponse")
-@Schema(name = "TemplateMoveConfigResponse",
-    description = "Tells us if the template move config operation was successful or not")
-@OwnedBy(CDC)
-public class TemplateMoveConfigResponse {
-  @Schema(description = "Contains the templateIdentifier of the successfully moved config.") String templateIdentifier;
-  @Schema(description = "Contains the versionLabel of the successfully moved config.") String versionLabel;
+@ApiModel("TemplateUpdateGitDetailsResponse")
+@Schema(name = "TemplateUpdateGitDetailsResponse",
+    description = "Tells status of update git details request for given template")
+@OwnedBy(PIPELINE)
+public class TemplateUpdateGitMetadataResponse {
+  @Schema(description = "status whether update was successful or not") Boolean status;
 }

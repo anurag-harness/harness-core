@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.template.beans;
+package io.harness.template.resources.beans;
 
 public class PermissionTypes {
   public static final String TEMPLATE_EDIT_PERMISSION = "core_template_edit";

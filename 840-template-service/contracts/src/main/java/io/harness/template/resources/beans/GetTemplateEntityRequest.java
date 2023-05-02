@@ -5,18 +5,22 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.template.beans;
+package io.harness.template.resources.beans;
 
-import io.harness.annotations.dev.HarnessTeam;
+import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
+
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.Scope;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@OwnedBy(PIPELINE)
+@Data
 @Builder
-@OwnedBy(HarnessTeam.PIPELINE)
-public class UpdateGitDetailsParams {
-  String filepath;
-  String repoName;
+public class GetTemplateEntityRequest {
+  Scope scope;
+  String templateIdentifier;
+  String version;
+  boolean loadFromCache;
 }
