@@ -810,7 +810,7 @@ public class NGTriggerServiceImpl implements NGTriggerService {
                     + "in the pipeline yaml, but the trigger has it as " + value.toString());
           }
         } else {
-          String error = validateStaticValues(templateValue, value);
+          String error = validateStaticValues(templateValue, value, key.getExpressionFqn());
           if (isNotEmpty(error)) {
             errorMap.put(key, error);
           }
@@ -1015,7 +1015,7 @@ public class NGTriggerServiceImpl implements NGTriggerService {
             toUpdateTriggerPipelineFQNToValueMap.put(key, templateValue);
           } else {
             // If key is variable value, validate its value type
-            String error = validateStaticValues(templateValue, triggerValue);
+            String error = validateStaticValues(templateValue, triggerValue, key.getExpressionFqn());
             if (isNotEmpty(error)) {
               // Replace by empty variable value if validation fails (user will need to provide the value)
               toUpdateTriggerPipelineFQNToValueMap.put(key, "");
