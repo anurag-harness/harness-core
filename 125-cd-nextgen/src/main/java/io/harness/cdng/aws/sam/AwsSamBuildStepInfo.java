@@ -7,6 +7,7 @@
 
 package io.harness.cdng.aws.sam;
 
+import static io.harness.beans.SwaggerConstants.STRING_CLASSPATH;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.runtime;
 
 import io.harness.annotation.RecasterAlias;
@@ -15,7 +16,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.SwaggerConstants;
 import io.harness.beans.yaml.extended.ImagePullPolicy;
 import io.harness.cdng.pipeline.steps.CDAbstractStepInfo;
-import io.harness.cdng.visitor.helpers.cdstepinfo.aws.sam.AwsSamDeployStepInfoVisitorHelper;
+import io.harness.cdng.visitor.helpers.cdstepinfo.aws.sam.AwsSamBuildStepInfoVisitorHelper;
 import io.harness.executions.steps.StepSpecTypeConstants;
 import io.harness.plancreator.steps.TaskSelectorYaml;
 import io.harness.plancreator.steps.common.SpecParameters;
@@ -45,11 +46,11 @@ import org.springframework.data.annotation.TypeAlias;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@SimpleVisitorHelper(helperClass = AwsSamDeployStepInfoVisitorHelper.class)
-@JsonTypeName(StepSpecTypeConstants.AWS_SAM_DEPLOY)
-@TypeAlias("awsSamDeployStepInfo")
-@RecasterAlias("io.harness.cdng.aws.sam.AwsSamDeployStepInfo")
-public class AwsSamDeployStepInfo extends AwsSamBaseStepInfo implements CDAbstractStepInfo, Visitable {
+@SimpleVisitorHelper(helperClass = AwsSamBuildStepInfoVisitorHelper.class)
+@JsonTypeName(StepSpecTypeConstants.AWS_SAM_BUILD)
+@TypeAlias("awsSamBuildStepInfo")
+@RecasterAlias("io.harness.cdng.aws.sam.AwsSamBuildStepInfo")
+public class AwsSamBuildStepInfo extends AwsSamBaseStepInfo implements CDAbstractStepInfo, Visitable {
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
   @ApiModelProperty(hidden = true)
@@ -59,19 +60,24 @@ public class AwsSamDeployStepInfo extends AwsSamBaseStepInfo implements CDAbstra
 
   @YamlSchemaTypes({runtime})
   @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH)
-  ParameterField<List<String>> deployCommandOptions;
+  ParameterField<List<String>> buildCommandOptions;
+
+  @ApiModelProperty(dataType = STRING_CLASSPATH) private ParameterField<String> samBuildDockerRegistryConnectorRef;
 
   @Builder(builderMethodName = "infoBuilder")
-  public AwsSamDeployStepInfo(ParameterField<List<TaskSelectorYaml>> delegateSelectors,
+  public AwsSamBuildStepInfo(ParameterField<List<TaskSelectorYaml>> delegateSelectors,
       ParameterField<Map<String, JsonNode>> settings, ParameterField<String> image, ParameterField<String> connectorRef,
       ContainerResource resources, ParameterField<Map<String, String>> envVariables, ParameterField<Boolean> privileged,
-      ParameterField<Integer> runAsUser, ParameterField<ImagePullPolicy> imagePullPolicy) {
+      ParameterField<Integer> runAsUser, ParameterField<ImagePullPolicy> imagePullPolicy,
+      ParameterField<List<String>> buildCommandOptions, ParameterField<String> samBuildDockerRegistryConnectorRef) {
     super(delegateSelectors, settings, image, connectorRef, resources, envVariables, privileged, runAsUser,
         imagePullPolicy);
+    this.buildCommandOptions = buildCommandOptions;
+    this.samBuildDockerRegistryConnectorRef = samBuildDockerRegistryConnectorRef;
   }
   @Override
   public StepType getStepType() {
-    return AwsSamDeployStep.STEP_TYPE;
+    return AwsSamBuildStep.STEP_TYPE;
   }
 
   @Override
@@ -81,7 +87,7 @@ public class AwsSamDeployStepInfo extends AwsSamBaseStepInfo implements CDAbstra
 
   @Override
   public SpecParameters getSpecParameters() {
-    return AwsSamDeployStepParameters.infoBuilder()
+    return AwsSamBuildStepParameters.infoBuilder()
         .image(getImage())
         .envVariables(getEnvVariables())
         .delegateSelectors(this.getDelegateSelectors())
