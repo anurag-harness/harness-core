@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Harness Inc. All rights reserved.
+ * Copyright 2022 Harness Inc. All rights reserved.
  * Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
@@ -8,38 +8,32 @@
 package io.harness.beans.yaml.extended;
 
 import io.harness.annotation.RecasterAlias;
-import io.harness.annotations.dev.HarnessTeam;
-import io.harness.annotations.dev.OwnedBy;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.springframework.data.annotation.TypeAlias;
 
-@OwnedBy(HarnessTeam.CI)
-@TypeAlias("tiLanguage")
-@RecasterAlias("io.harness.beans.yaml.extended.TILanguage")
-public enum TILanguage {
-  @JsonProperty("Java") JAVA("Java"),
-  @JsonProperty("Kotlin") KOTLIN("Kotlin"),
-  @JsonProperty("Scala") SCALA("Scala"),
-  @JsonProperty("Csharp") CSHARP("Csharp"),
-  @JsonProperty("Python") PYTHON("Python");
+@TypeAlias("tiPythonVersion")
+@RecasterAlias("io.harness.beans.yaml.extended.TIPythonVersion")
+public enum TIPythonVersion {
+  @JsonProperty("3") PYTHONTHREE("3"),
+  @JsonProperty("2") PYTHONTWO("2");
 
   private final String yamlName;
 
-  @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
-  public static TILanguage getLanguage(@JsonProperty("language") String yamlName) {
-    for (TILanguage language : TILanguage.values()) {
-      if (language.yamlName.equalsIgnoreCase(yamlName)) {
-        return language;
-      }
-    }
-    throw new IllegalArgumentException("Invalid value: " + yamlName);
+  TIPythonVersion(String yamlName) {
+    this.yamlName = yamlName;
   }
 
-  TILanguage(String yamlName) {
-    this.yamlName = yamlName;
+  @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+  public static TIPythonVersion getPythonVersion(@JsonProperty("pythonVersion") String yamlName) {
+    if (yamlName.equalsIgnoreCase("PYTHONTHREE") || yamlName.equalsIgnoreCase(PYTHONTHREE.yamlName)) {
+      return PYTHONTHREE;
+    } else if (yamlName.equalsIgnoreCase("PYTHONTWO") || yamlName.equalsIgnoreCase(PYTHONTWO.yamlName)) {
+      return PYTHONTWO;
+    }
+    throw new IllegalArgumentException("Invalid value: " + yamlName);
   }
 
   @JsonValue
@@ -52,7 +46,7 @@ public enum TILanguage {
     return yamlName;
   }
 
-  public static TILanguage fromString(final String s) {
-    return TILanguage.getLanguage(s);
+  public static TIPythonVersion fromString(final String s) {
+    return TIPythonVersion.getPythonVersion(s);
   }
 }
