@@ -167,6 +167,7 @@ import io.harness.pms.expressions.functors.ImagePullSecretFunctor;
 import io.harness.pms.expressions.functors.InstanceFunctor;
 import io.harness.pms.expressions.functors.KubernetesReleaseFunctor;
 import io.harness.pms.governance.EnvironmentExpansionHandler;
+import io.harness.pms.governance.EnvironmentGroupExpandedHandler;
 import io.harness.pms.governance.EnvironmentRefExpansionHandler;
 import io.harness.pms.governance.MultiEnvironmentExpansionHandler;
 import io.harness.pms.governance.ServiceRefExpansionHandler;
@@ -814,11 +815,23 @@ public class NextGenApplication extends Application<NextGenConfiguration> {
                                                                .expansionHandler(MultiEnvironmentExpansionHandler.class)
                                                                .build();
 
+    JsonExpansionInfo environmentGroupInfo =
+        JsonExpansionInfo.newBuilder()
+            .setKey("stage/spec/environmentGroup")
+            .setExpansionType(ExpansionRequestType.LOCAL_FQN)
+            .setStageType(StepType.newBuilder().setStepCategory(StepCategory.STAGE).setType("Deployment").build())
+            .build();
+    JsonExpansionHandlerInfo environmentGroupHandlerInfo = JsonExpansionHandlerInfo.builder()
+                                                               .jsonExpansionInfo(environmentGroupInfo)
+                                                               .expansionHandler(EnvironmentGroupExpandedHandler.class)
+                                                               .build();
+
     jsonExpansionHandlers.add(connRefHandlerInfo);
     jsonExpansionHandlers.add(serviceRefHandlerInfo);
     jsonExpansionHandlers.add(envRefHandlerInfo);
     jsonExpansionHandlers.add(envHandlerInfo);
     jsonExpansionHandlers.add(multiEnvironmentHandlerInfo);
+    jsonExpansionHandlers.add(environmentGroupHandlerInfo);
     return jsonExpansionHandlers;
   }
 
