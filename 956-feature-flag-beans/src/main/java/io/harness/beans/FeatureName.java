@@ -741,7 +741,9 @@ public enum FeatureName {
       HarnessTeam.GTM),
   SPG_TRIGGER_FOR_ALL_ARTIFACTS_NG(
       "Will fire the artifact and manifest triggers for all the versions in the polling response instead of the latest only",
-      HarnessTeam.SPG);
+      HarnessTeam.SPG),
+  PIE_MULTISELECT_AND_COMMA_IN_ALLOWED_VALUES(
+      "Will allow comma and multi-selection in runtime input allowed values", PIPELINE);
 
   @Deprecated
   FeatureName() {
