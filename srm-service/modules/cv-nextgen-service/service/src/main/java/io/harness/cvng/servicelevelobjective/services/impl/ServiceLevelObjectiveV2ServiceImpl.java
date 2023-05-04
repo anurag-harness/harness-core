@@ -945,16 +945,22 @@ public class ServiceLevelObjectiveV2ServiceImpl implements ServiceLevelObjective
       SLOErrorBudgetBurnRateCondition conditionSpec = (SLOErrorBudgetBurnRateCondition) condition;
       LocalDateTime currentLocalDate = LocalDateTime.ofInstant(clock.instant(), serviceLevelObjective.getZoneOffset());
       int totalErrorBudgetMinutes = serviceLevelObjective.getTotalErrorBudgetMinutes(currentLocalDate);
-      String sliId = serviceLevelIndicatorService
-                         .getServiceLevelIndicator(ProjectParams.builder()
-                                                       .accountIdentifier(serviceLevelObjective.getAccountId())
-                                                       .orgIdentifier(serviceLevelObjective.getOrgIdentifier())
-                                                       .projectIdentifier(serviceLevelObjective.getProjectIdentifier())
-                                                       .build(),
-                             ((SimpleServiceLevelObjective) serviceLevelObjective).getServiceLevelIndicators().get(0))
-                         .getUuid();
-      double errorBudgetBurnRate =
-          sliRecordService.getErrorBudgetBurnRate(sliId, conditionSpec.getLookBackDuration(), totalErrorBudgetMinutes);
+      double errorBudgetBurnRate = 0.0;
+      if (serviceLevelObjective.getType().equals(ServiceLevelObjectiveType.SIMPLE)) {
+        ServiceLevelIndicator serviceLevelIndicator = serviceLevelIndicatorService.getServiceLevelIndicator(
+            ProjectParams.builder()
+                .accountIdentifier(serviceLevelObjective.getAccountId())
+                .orgIdentifier(serviceLevelObjective.getOrgIdentifier())
+                .projectIdentifier(serviceLevelObjective.getProjectIdentifier())
+                .build(),
+            ((SimpleServiceLevelObjective) serviceLevelObjective).getServiceLevelIndicators().get(0));
+        errorBudgetBurnRate = sliRecordService.getErrorBudgetBurnRate(serviceLevelIndicator.getUuid(),
+            conditionSpec.getLookBackDuration(), totalErrorBudgetMinutes,
+            serviceLevelIndicator.getSliMissingDataType());
+      } else if (serviceLevelObjective.getType().equals(ServiceLevelObjectiveType.COMPOSITE)) {
+        errorBudgetBurnRate = compositeSLORecordService.getErrorBudgetBurnRate(
+            serviceLevelObjective.getUuid(), conditionSpec.getLookBackDuration(), totalErrorBudgetMinutes);
+      }
       sloHealthIndicator.setErrorBudgetBurnRate(errorBudgetBurnRate);
     }
 
