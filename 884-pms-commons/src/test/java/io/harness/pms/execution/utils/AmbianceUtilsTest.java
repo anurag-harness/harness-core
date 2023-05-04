@@ -8,6 +8,7 @@
 package io.harness.pms.execution.utils;
 
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
+import static io.harness.rule.OwnerRule.BRIJESH;
 import static io.harness.rule.OwnerRule.GARVIT;
 import static io.harness.rule.OwnerRule.NAMAN;
 import static io.harness.rule.OwnerRule.PRASHANT;
@@ -404,6 +405,93 @@ public class AmbianceUtilsTest extends CategoryTest {
     assertThat(version).isEqualTo(PipelineVersion.V1);
   }
 
+  @Test
+  @Owner(developers = BRIJESH)
+  @Category(UnitTests.class)
+  public void testGetFQNFromAmbiance() {
+    Ambiance ambiance = Ambiance.newBuilder().build();
+    assertThat(AmbianceUtils.getFQNUsingLevels(ambiance.getLevelsList())).isEmpty();
+
+    ambiance = Ambiance.newBuilder()
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.PIPELINE).build())
+                                  .setIdentifier("pipeline")
+                                  .build())
+                   .build();
+    assertThat(AmbianceUtils.getFQNUsingLevels(ambiance.getLevelsList())).isEqualTo("pipeline");
+
+    ambiance = Ambiance.newBuilder()
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.PIPELINE).build())
+                                  .setIdentifier("pipeline")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STEP).build())
+                                  .setIdentifier("stages")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STEP).build())
+                                  .setIdentifier("parallel")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STAGE).build())
+                                  .setIdentifier("stage1")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STEP).build())
+                                  .setIdentifier("spec")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STEP).build())
+                                  .setIdentifier("execution")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STEP).build())
+                                  .setIdentifier("step1")
+                                  .build())
+                   .build();
+    assertThat(AmbianceUtils.getFQNUsingLevels(ambiance.getLevelsList()))
+        .isEqualTo("pipeline.stages.stage1.spec.execution.step1");
+
+    ambiance = Ambiance.newBuilder()
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.PIPELINE).build())
+                                  .setIdentifier("pipeline")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STEP).build())
+                                  .setIdentifier("stages")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STRATEGY).build())
+                                  .setSkipExpressionChain(true)
+                                  .setIdentifier("stage1")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STAGE).build())
+                                  .setIdentifier("stage1_1")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STEP).build())
+                                  .setIdentifier("spec")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STEP).build())
+                                  .setIdentifier("execution")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STRATEGY).build())
+                                  .setSkipExpressionChain(true)
+                                  .setIdentifier("step1")
+                                  .build())
+                   .addLevels(Level.newBuilder()
+                                  .setStepType(StepType.newBuilder().setStepCategory(StepCategory.STEP).build())
+                                  .setIdentifier("step1_0")
+                                  .build())
+                   .build();
+    assertThat(AmbianceUtils.getFQNUsingLevels(ambiance.getLevelsList()))
+        .isEqualTo("pipeline.stages.stage1_1.spec.execution.step1_0");
+  }
   @Test
   @Owner(developers = NAMAN)
   @Category(UnitTests.class)
