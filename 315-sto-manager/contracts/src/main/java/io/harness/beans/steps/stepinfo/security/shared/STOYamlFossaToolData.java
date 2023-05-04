@@ -23,8 +23,10 @@ import lombok.Data;
 @Builder
 @OwnedBy(STO)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class STOYamlArgs {
-  @ApiModelProperty(dataType = STRING_CLASSPATH) protected ParameterField<String> cli;
+public class STOYamlFossaToolData {
+  @ApiModelProperty(dataType = STRING_CLASSPATH, name = "team_name") protected ParameterField<String> teamName;
 
-  @ApiModelProperty(dataType = STRING_CLASSPATH) protected ParameterField<String> passthrough;
+  @ApiModelProperty(dataType = STRING_CLASSPATH, name = "project_name") protected ParameterField<String> projectName;
+
+  @ApiModelProperty(dataType = STRING_CLASSPATH, name = "policy_name") protected ParameterField<String> policyName;
 }

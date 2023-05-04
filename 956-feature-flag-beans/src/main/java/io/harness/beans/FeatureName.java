@@ -370,7 +370,6 @@ public enum FeatureName {
       "Customers started facing NPE due to migration of usergroup reference, removed null check behind FF - ticket ID - CDS-39770, CG",
       HarnessTeam.SPG),
 
-  STO_STEP_PALETTE_V1("Enable first iteration of individual steps for STO", HarnessTeam.STO),
   STO_STEP_PALETTE_Q1_2023(
       "Enable following steps for STO: AWSECR, AWSSecurityHub, Brakeman, CustomIngest, OWASP, Nikto, Nmap, Prowler",
       HarnessTeam.STO),
@@ -382,7 +381,8 @@ public enum FeatureName {
   STO_STEP_PALETTE_CODEQL("Enable CodeQL step for STO", HarnessTeam.STO),
   STO_STEP_PALETTE_GIT_LEAKS("Enable Gitleaks step for STO", HarnessTeam.STO),
 
-  DONT_ENABLE_STO_STEP_PALETTE_V3(
+  STO_STEP_PALETTE_SEMGREP("Enable Semgrep step for STO", HarnessTeam.STO),
+  STO_STEPS_TEST_MODE(
       "Enable the rest of STO Steps Q2 2023 and beyond, NOT READY for use in PRODUCTION", HarnessTeam.STO),
 
   STO_JIRA_INTEGRATION("Enable Jira integration for STO", HarnessTeam.STO),
