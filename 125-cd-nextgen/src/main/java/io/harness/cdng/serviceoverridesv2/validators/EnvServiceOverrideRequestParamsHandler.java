@@ -12,13 +12,16 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.core.serviceoverride.beans.NGServiceOverridesEntity;
 import io.harness.ng.core.serviceoverridev2.beans.ServiceOverrideRequestDTOV2;
 
-import com.google.inject.Singleton;
-import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 @OwnedBy(HarnessTeam.CDC)
-@Singleton
-public interface ServiceOverrideTypeBasedValidator {
-  void validateRequest(@NonNull ServiceOverrideRequestDTOV2 requestDTOV2);
+public class EnvServiceOverrideRequestParamsHandler implements ServiceOverrideTypeBasedRequestParamsHandler {
+  @Override
+  public void validateRequest(@NotNull ServiceOverrideRequestDTOV2 requestDTOV2) {}
 
-  String generateServiceOverrideIdentifier(@NonNull NGServiceOverridesEntity serviceOverridesEntity);
+  @Override
+  public String generateServiceOverrideIdentifier(NGServiceOverridesEntity serviceOverridesEntity) {
+    return String.join("_", serviceOverridesEntity.getEnvironmentRef(), serviceOverridesEntity.getServiceRef())
+        .replace(".", "_");
+  }
 }
