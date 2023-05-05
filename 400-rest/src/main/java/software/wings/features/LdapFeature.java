@@ -57,7 +57,7 @@ public class LdapFeature extends AbstractPremiumFeature implements ComplianceByR
 
     if (!accountService.get(accountId).isOauthEnabled() && targetAccountType.equals(AccountType.COMMUNITY)) {
       ssoService.uploadOauthConfiguration(accountId, "", EnumSet.allOf(OauthProviderType.class));
-      ssoService.setAuthenticationMechanism(accountId, AuthenticationMechanism.OAUTH);
+      ssoService.setAuthenticationMechanism(accountId, AuthenticationMechanism.OAUTH, false);
     }
 
     return isUsageCompliantWithRestrictions(accountId, targetAccountType);

@@ -43,16 +43,28 @@ public interface SSOService {
 
   SSOConfig updateSamlConfiguration(@NotNull String accountId, InputStream inputStream, String displayName,
       String groupMembershipAttr, @NotNull Boolean authorizationEnabled, String logoutUrl, String entityIdentifier,
-      String samlProviderType, String clientId, char[] clientSecret, String friendlySamlName, boolean isNGSSO);
+      String samlProviderType, String clientId, char[] clientSecret, boolean isNGSSO);
+
+  // this overloading is for updating a SAML setting (samlSSOId) among list of saml settings in account
+  SSOConfig updateSamlConfiguration(@NotNull String accountId, @NotNull String samlSSOId, InputStream inputStream,
+      String displayName, String groupMembershipAttr, @NotNull Boolean authorizationEnabled, String logoutUrl,
+      String entityIdentifier, String samlProviderType, String clientId, char[] clientSecret,
+      String friendlySamlAppName, boolean isNGSSO);
 
   SSOConfig updateLogoutUrlSamlSettings(@NotNull String accountId, @NotNull String logoutUrl);
 
   SSOConfig deleteSamlConfiguration(@NotNull String accountId);
 
+  // this overloading is for deleting a SAML setting (samlSSOId) among list of saml settings in account
+  SSOConfig deleteSamlConfiguration(@NotNull String accountId, @NotNull String samlSSOId);
+
   SSOConfig setAuthenticationMechanism(
-      @NotNull String accountId, @NotNull AuthenticationMechanism authenticationMechanism);
+      @NotNull String accountId, @NotNull AuthenticationMechanism authenticationMechanism, boolean isFromNG);
 
   SSOConfig getAccountAccessManagementSettings(@NotNull String accountId);
+
+  // this overloading is for NG case
+  // SSOConfig getAccountAccessManagementSettings(@NotNull String accountId, boolean isNGSSO);
 
   SSOConfig getAccountAccessManagementSettingsV2(@NotNull String accountId);
 
@@ -68,6 +80,9 @@ public interface SSOService {
   LdapSettings deleteLdapSettings(@NotBlank String accountId);
 
   SamlSettings getSamlSettings(@NotBlank String accountId);
+
+  // this overloading is to GET a SAML setting (samlSSOId) among list of saml settings in account
+  SamlSettings getSamlSettings(@NotBlank String accountId, @NotNull String samlSSOId);
 
   LdapTestResponse validateLdapConnectionSettings(@NotNull LdapSettings ldapSettings, @NotBlank String accountId);
 
@@ -88,4 +103,6 @@ public interface SSOService {
 
   LdapSettingsWithEncryptedDataAndPasswordDetail getLdapSettingsWithEncryptedDataAndPasswordDetail(
       @NotBlank String accountId, @NotBlank String password);
+
+  void updateAuthenticationEnabledForSAMLSetting(@NotBlank String accountId, @NotNull String samlSSOId, boolean enable);
 }
