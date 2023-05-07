@@ -27,6 +27,7 @@ import static java.util.Arrays.asList;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.authenticationservice.beans.SAMLProviderType;
 import io.harness.beans.SecretText;
 import io.harness.delegate.beans.ldap.LdapSettingsWithEncryptedDataAndPasswordDetail;
 import io.harness.delegate.beans.ldap.LdapSettingsWithEncryptedDataDetail;
@@ -51,7 +52,6 @@ import software.wings.beans.sso.LdapSettings;
 import software.wings.beans.sso.LdapSettingsMapper;
 import software.wings.beans.sso.LdapTestResponse;
 import software.wings.beans.sso.OauthSettings;
-import software.wings.beans.sso.SAMLProviderType;
 import software.wings.beans.sso.SSOSettings;
 import software.wings.beans.sso.SamlSettings;
 import software.wings.delegatetasks.DelegateProxyFactory;
@@ -127,19 +127,20 @@ public class SSOServiceImpl implements SSOService {
       groupMembershipAttr = authorizationEnabled ? groupMembershipAttr : null;
       buildAndUploadSamlSettings(accountId, fileAsString, displayName, groupMembershipAttr, logoutUrl, entityIdentifier,
           samlProviderType, clientId, clientSecret, friendlySamlName, isNGSSO, false, null);
-      return getAccountAccessManagementSettings(accountId);
+      return getAccountAccessManagementSettings(accountId, isNGSSO);
     } catch (SamlException | IOException | URISyntaxException e) {
       throw new WingsException(ErrorCode.INVALID_SAML_CONFIGURATION, e);
     }
   }
 
   @Override
-  public SSOConfig uploadOauthConfiguration(String accountId, String filter, Set<OauthProviderType> allowedProviders) {
+  public SSOConfig uploadOauthConfiguration(
+      String accountId, String filter, Set<OauthProviderType> allowedProviders, boolean isNG) {
     if (isEmpty(allowedProviders)) {
       throw new InvalidRequestException("At least one OAuth provider must be selected.");
     }
     buildAndUploadOauthSettings(accountId, filter, allowedProviders);
-    return getAccountAccessManagementSettings(accountId);
+    return getAccountAccessManagementSettings(accountId, isNG);
   }
 
   @Override
@@ -195,7 +196,7 @@ public class SSOServiceImpl implements SSOService {
     } else {
       throw new InvalidRequestException("Cannot update Logout URL as no SAML Config exists for your account from CG");
     }
-    return getAccountAccessManagementSettings(accountId);
+    return getAccountAccessManagementSettings(accountId, false);
   }
 
   @Override
@@ -349,20 +350,23 @@ public class SSOServiceImpl implements SSOService {
     accountService.update(account);
     return featureFlagService.isEnabled(PL_ENABLE_MULTIPLE_IDP_SUPPORT, accountId) && isFromNG
         ? getAccountAccessManagementSettingsV2(accountId)
-        : getAccountAccessManagementSettings(accountId);
+        : getAccountAccessManagementSettings(accountId, false);
   }
 
   @Override
-  public SSOConfig getAccountAccessManagementSettings(String accountId) {
+  public SSOConfig getAccountAccessManagementSettings(String accountId, boolean isNG) {
     // We are handling the check programmatically for now, since we don't have enough info in the query / path
     // parameters
     authorizeAccessManagementCall();
     Account account = accountService.get(accountId);
-    return SSOConfig.builder()
-        .accountId(accountId)
-        .authenticationMechanism(account.getAuthenticationMechanism())
-        .ssoSettings(getSSOSettings(account))
-        .build();
+    SSOConfig ssoConfigBuilt =
+        SSOConfig.builder().accountId(accountId).authenticationMechanism(account.getAuthenticationMechanism()).build();
+    List<SSOSettings> ssoSettingsList =
+        featureFlagService.isEnabled(PL_ENABLE_MULTIPLE_IDP_SUPPORT, account.getUuid()) && isNG
+        ? getSSOSettingsV2(account)
+        : getSSOSettings(account);
+    ssoConfigBuilt.setSsoSettings(ssoSettingsList);
+    return ssoConfigBuilt;
   }
 
   @Override
@@ -822,7 +826,7 @@ public class SSOServiceImpl implements SSOService {
 
     buildAndUploadSamlSettings(accountId, fileAsString, displayName, groupMembershipAttr, logoutUrl, entityIdentifier,
         samlProviderType, clientId, clientSecret, friendlySamlName, isNGSSO, true, settings.getUuid());
-    return getAccountAccessManagementSettings(accountId);
+    return getAccountAccessManagementSettings(accountId, isNGSSO);
   }
 
   public void deleteTempSecret(boolean temporaryEncryption, EncryptedDataDetail encryptedDataDetail, String accountId) {

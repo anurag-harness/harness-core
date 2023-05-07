@@ -17,6 +17,8 @@ import static com.google.common.base.Charsets.UTF_8;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.authenticationservice.beans.SAMLProviderType;
+import io.harness.authenticationservice.beans.SSORequest;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.WingsException;
 import io.harness.ng.core.account.AuthenticationMechanism;
@@ -38,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -77,30 +80,6 @@ public class SamlClientService {
 
   public SamlClient getSamlClientFromAccount(Account account) throws SamlException {
     return getSamlClient(ssoSettingService.getSamlSettingsByAccountId(account.getUuid()));
-  }
-
-  public Map<String, SamlClientFriendlyName> getSamlClientListFromSamlSettingList(List<SamlSettings> samlSettings)
-      throws SamlException {
-    Map<String, SamlClientFriendlyName> samlClientMap = new HashMap<>();
-    if (isNotEmpty(samlSettings)) {
-      samlSettings.forEach(setting -> {
-        try {
-          samlClientMap.put(
-              setting.getUuid(), new SamlClientFriendlyName(getSamlClient(setting), setting.getFriendlySamlName()));
-        } catch (SamlException se) {
-          log.warn("Error generating saml client for saml setting id {} in account {}", setting.getUuid(),
-              setting.getAccountId());
-        }
-      });
-    }
-    return samlClientMap;
-  }
-
-  public SamlClient getSamlClientFromAccountAndSamlId(Account account, String samlUuid) throws SamlException {
-    List<SamlSettings> samlSettings = ssoSettingService.getSamlSettingsListByAccountId(account.getUuid());
-    SamlSettings filterSetting =
-        samlSettings.stream().filter(setting -> samlUuid.equals(setting.getUuid())).findFirst().orElse(null);
-    return getSamlClient(filterSetting);
   }
 
   public SamlClient getSamlClientFromIdpUrl(String idpUrl) throws SamlException {
@@ -174,6 +153,33 @@ public class SamlClientService {
     }
   }
 
+  public SamlClient getSamlClientFromAccountAndSamlId(Account account, String samlUuid) throws SamlException {
+    return getSamlClient(ssoSettingService.getSamlSettingsByAccountIdAndUuid(account.getUuid(), samlUuid));
+  }
+
+  public List<SSORequest> generateSamlRequestListFromAccount(Account account, boolean isTestConnectionRequest) {
+    List<SSORequest> ssoRequests = new ArrayList<>();
+    try {
+      List<SamlSettings> samlSettings = ssoSettingService.getSamlSettingsListByAccountId(account.getUuid());
+      Map<String, SamlClientFriendlyNameProviderType> samlClientMap =
+          getSamlClientListFromSamlSettingList(samlSettings);
+      for (Map.Entry<String, SamlClientFriendlyNameProviderType> entry : samlClientMap.entrySet()) {
+        if (entry.getValue() != null && entry.getValue().getSamlClient() != null) {
+          SSORequest ssoRequest = new SSORequest();
+          populateRedirectUriValueInSSORequest(entry.getValue().getSamlClient(), isTestConnectionRequest, ssoRequest);
+          ssoRequest.setFriendlySamlName(entry.getValue().getFriendlySamlName());
+          ssoRequest.setSsoId(entry.getKey());
+          ssoRequest.setSamlProviderType(entry.getValue().getSamlProviderType());
+          ssoRequests.add(ssoRequest);
+        }
+      }
+    } catch (SamlException | URISyntaxException | IOException e) {
+      throw new WingsException(
+          String.format("Generating Saml request list failed for account: [%s]", account.getUuid()), e);
+    }
+    return ssoRequests;
+  }
+
   private void populateRedirectUriValueInSSORequest(SamlClient samlClient, boolean isTestConnectionRequest,
       SSORequest ssoRequest) throws URISyntaxException, IOException, SamlException {
     final String triggerType = isTestConnectionRequest ? "test" : "login";
@@ -181,6 +187,26 @@ public class SamlClientService {
     redirectionUri.addParameter(SAML_REQUEST_URI_KEY, encodeParamaeters(samlClient.getSamlRequest()));
     redirectionUri.addParameter("RelayState", SAML_TRIGGER_TYPE + "=" + triggerType);
     ssoRequest.setIdpRedirectUrl(redirectionUri.toString());
+  }
+
+  private Map<String, SamlClientFriendlyNameProviderType> getSamlClientListFromSamlSettingList(
+      List<SamlSettings> samlSettings) throws SamlException {
+    Map<String, SamlClientFriendlyNameProviderType> samlClientMap = new HashMap<>();
+    if (isNotEmpty(samlSettings)) {
+      samlSettings.forEach(setting -> {
+        try {
+          if (setting != null && setting.isAuthenticationEnabled()) {
+            samlClientMap.put(setting.getUuid(),
+                new SamlClientFriendlyNameProviderType(
+                    getSamlClient(setting), setting.getFriendlySamlName(), setting.getSamlProviderType()));
+          }
+        } catch (SamlException se) {
+          log.warn("Error generating saml client for saml setting id {} in account {}", setting.getUuid(),
+              setting.getAccountId(), se);
+        }
+      });
+    }
+    return samlClientMap;
   }
 
   public String encodeParamaeters(String encodedXmlParam) throws IOException {
@@ -212,8 +238,9 @@ public class SamlClientService {
   public enum HostType { GOOGLE, AZURE, OTHER }
 
   @Value
-  public static class SamlClientFriendlyName {
+  public static class SamlClientFriendlyNameProviderType {
     SamlClient samlClient;
     String friendlySamlName;
+    SAMLProviderType samlProviderType;
   }
 }

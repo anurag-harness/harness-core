@@ -5,26 +5,32 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package software.wings.security.authentication;
+package io.harness.authenticationservice.beans;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
-import io.harness.authenticationservice.beans.SSORequest;
+import io.harness.ng.core.account.OauthProviderType;
 
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 @OwnedBy(PL)
-@TargetModule(HarnessModule._950_NG_AUTHENTICATION_SERVICE)
 @Data
-@SuperBuilder
+@Builder
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class LoginTypeResponse extends LoginTypeBaseResponse {
-  private SSORequest SSORequest;
+@AllArgsConstructor
+@TargetModule(HarnessModule._950_NG_AUTHENTICATION_SERVICE)
+public class SSORequest {
+  private OauthProviderType oauthProviderType;
+  private String idpRedirectUrl;
+  private List<OauthProviderType> oauthProviderTypes;
+  private String ssoId;
+  private String friendlySamlName;
+  private SAMLProviderType samlProviderType;
 }

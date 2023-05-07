@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.authenticationservice.beans.SAMLProviderType;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.ldap.LdapSettingsWithEncryptedDataAndPasswordDetail;
 import io.harness.eraro.ErrorCode;
@@ -51,7 +52,6 @@ import software.wings.beans.sso.LdapSettings;
 import software.wings.beans.sso.LdapTestResponse;
 import software.wings.beans.sso.LdapTestResponse.Status;
 import software.wings.beans.sso.LdapUserSettings;
-import software.wings.beans.sso.SAMLProviderType;
 import software.wings.beans.sso.SSOType;
 import software.wings.beans.sso.SamlSettings;
 import software.wings.delegatetasks.DelegateProxyFactory;
