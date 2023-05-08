@@ -170,6 +170,7 @@ import io.harness.limits.checker.LimitApproachingException;
 import io.harness.limits.checker.UsageLimitExceededException;
 import io.harness.logging.AccountLogContext;
 import io.harness.logging.AutoLogContext;
+import io.harness.mongo.MongoConfig;
 import io.harness.mongo.index.BasicDBUtils;
 import io.harness.persistence.HIterator;
 import io.harness.persistence.HPersistence;
@@ -5674,7 +5675,7 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     for (String projectedKey : projectedKeys) {
       query.project(projectedKey, true);
     }
-    return new HIterator<>(query.fetch());
+    return new HIterator<>(query.limit(MongoConfig.NO_LIMIT).fetch());
   }
 
   @Override
