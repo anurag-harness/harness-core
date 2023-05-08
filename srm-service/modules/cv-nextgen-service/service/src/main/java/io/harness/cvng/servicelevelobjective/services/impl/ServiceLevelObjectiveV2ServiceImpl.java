@@ -559,11 +559,13 @@ public class ServiceLevelObjectiveV2ServiceImpl implements ServiceLevelObjective
             .sliTypes(sloDashboardApiFilter.getSliTypes())
             .sliEvaluationType(sloDashboardApiFilter.getEvaluationType())
             .searchFilter(sloDashboardApiFilter.getSearchFilter())
+            .childResource(sloDashboardApiFilter.isChildResource())
             .build());
     List<SLOHealthIndicator> sloHealthIndicators = sloHealthIndicatorService.getBySLOIdentifiers(projectParams,
         serviceLevelObjectiveList.stream()
             .map(AbstractServiceLevelObjective::getIdentifier)
-            .collect(Collectors.toList()));
+            .collect(Collectors.toList()),
+        sloDashboardApiFilter.isChildResource());
 
     Map<ErrorBudgetRisk, Long> riskToCountMap =
         sloHealthIndicators.stream()
@@ -1293,7 +1295,8 @@ public class ServiceLevelObjectiveV2ServiceImpl implements ServiceLevelObjective
       List<SLOHealthIndicator> sloHealthIndicators = sloHealthIndicatorService.getBySLOIdentifiers(projectParams,
           serviceLevelObjectiveList.stream()
               .map(AbstractServiceLevelObjective::getIdentifier)
-              .collect(Collectors.toList()));
+              .collect(Collectors.toList()),
+          filter.isChildResource());
       Map<String, ErrorBudgetRisk> sloIdToRiskMap =
           sloHealthIndicators.stream().collect(Collectors.toMap(SLOHealthIndicator::getServiceLevelObjectiveIdentifier,
               SLOHealthIndicator::getErrorBudgetRisk, (slo1, slo2) -> slo1));
