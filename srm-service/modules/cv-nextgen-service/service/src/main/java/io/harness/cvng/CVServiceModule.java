@@ -231,6 +231,8 @@ import io.harness.cvng.core.services.impl.SLIDataCollectionTaskServiceImpl;
 import io.harness.cvng.core.services.impl.ServiceGuardDataCollectionTaskServiceImpl;
 import io.harness.cvng.core.services.impl.SetupUsageEventServiceImpl;
 import io.harness.cvng.core.services.impl.SideKickServiceImpl;
+import io.harness.cvng.core.services.impl.SignalFXMetricDataCollectionInfoMapper;
+import io.harness.cvng.core.services.impl.SignalFXMetricNextGenHealthSourceHelper;
 import io.harness.cvng.core.services.impl.SplunkDataCollectionInfoMapper;
 import io.harness.cvng.core.services.impl.SplunkMetricDataCollectionInfoMapper;
 import io.harness.cvng.core.services.impl.SplunkServiceImpl;
@@ -697,6 +699,9 @@ public class CVServiceModule extends AbstractModule {
     dataSourceTypeDataCollectionInfoMapperMapBinder.addBinding(DataSourceType.SUMOLOGIC_METRICS)
         .to(SumologicMetricDataCollectionInfoMapper.class)
         .in(Scopes.SINGLETON);
+    dataSourceTypeDataCollectionInfoMapperMapBinder.addBinding(DataSourceType.SPLUNK_SIGNALFX_METRICS)
+        .to(SignalFXMetricDataCollectionInfoMapper.class)
+        .in(Scopes.SINGLETON);
     MapBinder<DataSourceType, DataCollectionSLIInfoMapper> dataSourceTypeDataCollectionSLIInfoMapperMapBinder =
         MapBinder.newMapBinder(binder(), DataSourceType.class, DataCollectionSLIInfoMapper.class);
     dataSourceTypeDataCollectionSLIInfoMapperMapBinder.addBinding(DataSourceType.PROMETHEUS)
@@ -731,6 +736,9 @@ public class CVServiceModule extends AbstractModule {
         .in(Scopes.SINGLETON);
     dataSourceTypeDataCollectionSLIInfoMapperMapBinder.addBinding(DataSourceType.SUMOLOGIC_METRICS)
         .to(SumologicMetricDataCollectionInfoMapper.class)
+        .in(Scopes.SINGLETON);
+    dataSourceTypeDataCollectionSLIInfoMapperMapBinder.addBinding(DataSourceType.SPLUNK_SIGNALFX_METRICS)
+        .to(SignalFXMetricDataCollectionInfoMapper.class)
         .in(Scopes.SINGLETON);
     MapBinder<MonitoredServiceSpecType, VerifyStepMonitoredServiceResolutionService>
         verifyStepCvConfigServiceMapBinder = MapBinder.newMapBinder(
@@ -847,6 +855,9 @@ public class CVServiceModule extends AbstractModule {
         .in(Scopes.SINGLETON);
     dataSourceTypeNextGenHelperMapBinder.addBinding(DataSourceType.ELASTICSEARCH)
         .to(ElasticSearchLogNextGenHealthSourceHelper.class)
+        .in(Scopes.SINGLETON);
+    dataSourceTypeNextGenHelperMapBinder.addBinding(DataSourceType.SPLUNK_SIGNALFX_METRICS)
+        .to(SignalFXMetricNextGenHealthSourceHelper.class)
         .in(Scopes.SINGLETON);
 
     MapBinder<DataSourceType, CVConfigUpdatableEntity> dataSourceTypeCVConfigMapBinder =
