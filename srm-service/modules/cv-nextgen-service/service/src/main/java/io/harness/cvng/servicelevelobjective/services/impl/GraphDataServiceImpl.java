@@ -195,6 +195,7 @@ public class GraphDataServiceImpl implements GraphDataService {
     return SLODashboardWidget.SLOGraphData
         .getSloGraphDataBuilder(errorBudgetRemainingPercentage, errorBudgetRemaining, errorBudgetBurndown, sloTrend,
             false, isCalculatingSLI, totalErrorBudget)
+        .evaluationType(evaluationType)
         .build();
   }
 
