@@ -222,8 +222,6 @@ public class NGTemplateServiceImpl implements NGTemplateService {
 
     // apply templates to template yaml for validation and populating module info
     applyTemplatesToYamlAndValidateSchema(templateEntity);
-    // populate template references
-    templateReferenceHelper.populateTemplateReferences(templateEntity);
 
     try {
       // Check if this is template identifier first entry, for marking it as stable template.
@@ -244,9 +242,12 @@ public class NGTemplateServiceImpl implements NGTemplateService {
 
       // check to make previous template stable as false
       TemplateEntity finalTemplateEntity = templateEntity;
+
+      TemplateEntity template = null;
+
       if (!firstVersionEntry && setStableTemplate) {
         String finalComments = comments;
-        return transactionHelper.performTransaction(() -> {
+        template = transactionHelper.performTransaction(() -> {
           makePreviousStableTemplateFalse(finalTemplateEntity.getAccountIdentifier(),
               finalTemplateEntity.getOrgIdentifier(), finalTemplateEntity.getProjectIdentifier(),
               finalTemplateEntity.getIdentifier(), finalTemplateEntity.getVersionLabel());
@@ -257,13 +258,20 @@ public class NGTemplateServiceImpl implements NGTemplateService {
         });
       } else {
         String finalComments1 = comments;
-        return transactionHelper.performTransaction(() -> {
+        template = transactionHelper.performTransaction(() -> {
           makePreviousLastUpdatedTemplateFalse(finalTemplateEntity.getAccountIdentifier(),
               finalTemplateEntity.getOrgIdentifier(), finalTemplateEntity.getProjectIdentifier(),
               finalTemplateEntity.getIdentifier(), finalTemplateEntity.getVersionLabel());
           return saveTemplate(finalTemplateEntity, finalComments1);
         });
       }
+
+      GitAwareContextHelper.setIsDefaultBranchInGitEntityInfo();
+      if (doPublishSetupUsages(template)) {
+        templateReferenceHelper.populateTemplateReferences(template);
+      }
+
+      return template;
 
     } catch (DuplicateKeyException ex) {
       throw new DuplicateFieldException(
@@ -282,6 +290,17 @@ public class NGTemplateServiceImpl implements NGTemplateService {
       throw new InvalidRequestException(String.format("Error while saving template [%s] of versionLabel [%s]: %s",
           templateEntity.getIdentifier(), templateEntity.getVersionLabel(), e.getMessage()));
     }
+  }
+
+  private boolean doPublishSetupUsages(TemplateEntity templateEntity) {
+    boolean defaultBranchCheckForGitX = GitAwareContextHelper.getIsDefaultBranchFromGitEntityInfo();
+
+    if (templateEntity.getStoreType() == null || templateEntity.getStoreType().equals(StoreType.INLINE)
+        || (templateEntity.getStoreType() == StoreType.REMOTE && defaultBranchCheckForGitX)) {
+      return true;
+    }
+
+    return false;
   }
 
   private void validateTemplateTypeAndChildTypeOfTemplate(
@@ -337,14 +356,22 @@ public class NGTemplateServiceImpl implements NGTemplateService {
         templateEntity.getProjectIdentifier(), templateEntity.getRepo(), templateEntity.getConnectorRef());
     // apply templates to template yaml for validations and populating module info
     applyTemplatesToYamlAndValidateSchema(templateEntity);
-    // update template references
-    templateReferenceHelper.populateTemplateReferences(templateEntity);
-    return transactionHelper.performTransaction(() -> {
+
+    TemplateEntity template = null;
+
+    template = transactionHelper.performTransaction(() -> {
       makePreviousLastUpdatedTemplateFalse(templateEntity.getAccountIdentifier(), templateEntity.getOrgIdentifier(),
           templateEntity.getProjectIdentifier(), templateEntity.getIdentifier(), templateEntity.getVersionLabel());
       return updateTemplateHelper(templateEntity.getOrgIdentifier(), templateEntity.getProjectIdentifier(),
           templateEntity, changeType, setDefaultTemplate, true, comments, null);
     });
+
+    GitAwareContextHelper.setIsDefaultBranchInGitEntityInfo();
+    if (doPublishSetupUsages(template)) {
+      templateReferenceHelper.populateTemplateReferences(template);
+    }
+
+    return template;
   }
 
   @Override
@@ -354,8 +381,7 @@ public class NGTemplateServiceImpl implements NGTemplateService {
         FeatureRestrictionName.TEMPLATE_SERVICE, templateEntity.getAccountIdentifier());
     // apply templates to template yaml for validations and populating module info
     applyTemplatesToYamlAndValidateSchema(templateEntity);
-    // update template references
-    templateReferenceHelper.populateTemplateReferences(templateEntity);
+
     GitEntityInfo gitEntityInfo = GitAwareContextHelper.getGitRequestParamsInfo();
     if (gitEntityInfo != null) {
       if (templateResponse.getGitDetails() != null) {
@@ -373,12 +399,22 @@ public class NGTemplateServiceImpl implements NGTemplateService {
         }
       }
     }
-    return transactionHelper.performTransaction(() -> {
+
+    TemplateEntity template = null;
+
+    template = transactionHelper.performTransaction(() -> {
       makePreviousLastUpdatedTemplateFalse(templateEntity.getAccountIdentifier(), templateEntity.getOrgIdentifier(),
           templateEntity.getProjectIdentifier(), templateEntity.getIdentifier(), templateEntity.getVersionLabel());
       return updateTemplateHelper(templateEntity.getOrgIdentifier(), templateEntity.getProjectIdentifier(),
           templateEntity, changeType, setDefaultTemplate, true, comments, null);
     });
+
+    GitAwareContextHelper.setIsDefaultBranchInGitEntityInfo();
+    if (doPublishSetupUsages(template)) {
+      templateReferenceHelper.populateTemplateReferences(template);
+    }
+
+    return template;
   }
 
   private TemplateEntity updateTemplateHelper(String oldOrgIdentifier, String oldProjectIdentifier,
@@ -416,21 +452,31 @@ public class NGTemplateServiceImpl implements NGTemplateService {
                                             .withLastUpdatedTemplate(updateLastUpdatedTemplateFlag)
                                             .withIsEntityInvalid(false);
 
+      TemplateEntity template = null;
+
       // Updating the stable template version.
       if (setStableTemplate && !templateToUpdate.isStableTemplate()) {
         TemplateEntity templateToUpdateWithStable = templateToUpdate.withStableTemplate(true);
         String finalComments = comments;
-        return transactionHelper.performTransaction(() -> {
+        template = transactionHelper.performTransaction(() -> {
           makePreviousStableTemplateFalse(templateEntity.getAccountIdentifier(), templateEntity.getOrgIdentifier(),
               templateEntity.getProjectIdentifier(), templateEntity.getIdentifier(),
               templateToUpdate.getVersionLabel());
           return templateServiceHelper.makeTemplateUpdateCall(templateToUpdateWithStable, oldTemplateEntity, changeType,
               finalComments, TemplateUpdateEventType.TEMPLATE_STABLE_TRUE_WITH_YAML_CHANGE_EVENT, false);
         });
+      } else {
+        template = templateServiceHelper.makeTemplateUpdateCall(templateToUpdate, oldTemplateEntity, changeType,
+            comments, eventType != null ? eventType : TemplateUpdateEventType.OTHERS_EVENT, false);
       }
 
-      return templateServiceHelper.makeTemplateUpdateCall(templateToUpdate, oldTemplateEntity, changeType, comments,
-          eventType != null ? eventType : TemplateUpdateEventType.OTHERS_EVENT, false);
+      GitAwareContextHelper.setIsDefaultBranchInGitEntityInfo();
+      if (doPublishSetupUsages(templateEntity)) {
+        templateReferenceHelper.populateTemplateReferences(template);
+      }
+
+      return template;
+
     } catch (DuplicateKeyException ex) {
       throw new DuplicateFieldException(
           format(DUP_KEY_EXP_FORMAT_STRING, templateEntity.getIdentifier(), templateEntity.getVersionLabel(),
@@ -469,8 +515,14 @@ public class NGTemplateServiceImpl implements NGTemplateService {
       if (templateOptional.isPresent() && StoreType.REMOTE.equals(templateOptional.get().getStoreType())) {
         TemplateEntity templateEntity = templateOptional.get();
         validateTemplateVersion(versionLabel, templateEntity);
+
+        if (doPublishSetupUsages(templateOptional.get())) {
+          templateReferenceHelper.populateTemplateReferences(templateOptional.get());
+        }
       }
+
       return templateOptional;
+
     } catch (ExplanationException | HintException | ScmException e) {
       String errorMessage = getErrorMessage(templateIdentifier, versionLabel);
       log.error(errorMessage, e);
