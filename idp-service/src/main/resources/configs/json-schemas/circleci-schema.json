@@ -3,7 +3,7 @@
 
   },
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.com/object1682412581.json",
+  "$id": "https://example.com/object1682412281.json",
   "title": "Root",
   "type": "object",
   "additionalProperties": false,
@@ -16,12 +16,12 @@
       "title": "Proxy",
       "type": "object",
       "required": [
-        "/snyk"
+        "/circleci/api"
       ],
       "properties": {
-        "/snyk": {
-          "$id": "#root/proxy//snyk",
-          "title": "/snyk",
+        "/circleci/api": {
+          "$id": "#root/proxy//circleci/api",
+          "title": "/circleci/api",
           "type": "object",
           "required": [
             "target",
@@ -30,23 +30,23 @@
           ],
           "properties": {
             "target": {
-              "$id": "#root/proxy//snyk/target",
+              "$id": "#root/proxy//circleci/api/target",
               "title": "Target",
               "type": "string",
               "default": "",
               "pattern": "^.*$"
             },
             "pathRewrite": {
-              "$id": "#root/proxy//snyk/pathRewrite",
+              "$id": "#root/proxy//circleci/api/pathRewrite",
               "title": "Pathrewrite",
               "type": "object",
               "required": [
-                "api/proxy/snyk/?"
+                "api/proxy/circleci/?"
               ],
               "properties": {
-                "api/proxy/snyk/?": {
-                  "$id": "#root/proxy//snyk/pathRewrite/api/proxy/snyk/?",
-                  "title": "Api/proxy/snyk/?",
+                "api/proxy/circleci/?": {
+                  "$id": "#root/proxy//circleci/api/pathRewrite/api/proxy/circleci/?",
+                  "title": "Api/proxy/circleci/?",
                   "type": "string",
                   "default": "",
                   "pattern": "^.*$"
@@ -54,24 +54,16 @@
               }
             },
             "headers": {
-              "$id": "#root/proxy//snyk/headers",
+              "$id": "#root/proxy//circleci/api/headers",
               "title": "Headers",
               "type": "object",
               "required": [
-                "User-Agent",
-                "Authorization"
+                "Circle-Token"
               ],
               "properties": {
-                "User-Agent": {
-                  "$id": "#root/proxy//snyk/headers/User-Agent",
-                  "title": "User-agent",
-                  "type": "string",
-                  "default": "",
-                  "pattern": "^.*$"
-                },
-                "Authorization": {
-                  "$id": "#root/proxy//snyk/headers/Authorization",
-                  "title": "Authorization",
+                "Circle-Token": {
+                  "$id": "#root/proxy//circleci/api/headers/Circle-Token",
+                  "title": "Circle-token",
                   "type": "string",
                   "default": "",
                   "pattern": "^.*$"
