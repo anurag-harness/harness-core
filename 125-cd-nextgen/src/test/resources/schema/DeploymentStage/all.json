@@ -269,6 +269,9 @@
             "connectorRef": {
               "type": "string"
             },
+            "digest": {
+              "type": "string"
+            },
             "registry": {
               "type": "string"
             },
@@ -787,6 +790,9 @@
               "type": "string"
             },
             "connectorRef": {
+              "type": "string"
+            },
+            "digest": {
               "type": "string"
             },
             "repository": {
@@ -4469,6 +4475,9 @@
             "connectorRef": {
               "type": "string"
             },
+            "digest": {
+              "type": "string"
+            },
             "imagePath": {
               "type": "string"
             },
@@ -5807,6 +5816,9 @@
             "connectorRef": {
               "type": "string"
             },
+            "digest": {
+              "type": "string"
+            },
             "imagePath": {
               "type": "string"
             },
@@ -6059,6 +6071,9 @@
             "connectorRef": {
               "type": "string",
               "minLength": 1
+            },
+            "digest": {
+              "type": "string"
             },
             "org": {
               "type": "string"
@@ -9868,6 +9883,9 @@
               "type": "string"
             },
             "connectorRef": {
+              "type": "string"
+            },
+            "digest": {
               "type": "string"
             },
             "metadata": {
