@@ -21,11 +21,11 @@ import lombok.EqualsAndHashCode;
 @OwnedBy(HarnessTeam.CDC)
 @Data
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("SERVICE")
-public class ServiceFilter extends Filter {
-  @Parameter(description = "ALL: To migrate all services. ID: TO migrate only specific services.")
+@JsonTypeName("ENVIRONMENT")
+public class EnvironmentFilter extends Filter {
+  @Parameter(description = "ALL: To migrate all environment. ID: TO migrate only specific environments.")
   @NotNull
   private ImportMechanism importType;
-  @Parameter(description = "All services from Application to import") private String appId;
+  @Parameter(description = "All environment from Application to import") private String appId;
   @Parameter(description = "To be provided if mechanism is ID") private List<String> ids;
 }
