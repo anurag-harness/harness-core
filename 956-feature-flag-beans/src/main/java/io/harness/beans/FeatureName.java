@@ -425,7 +425,6 @@ public enum FeatureName {
   NG_ARTIFACT_SOURCES("Flag to support multi artifact sources for service V2", HarnessTeam.CDC),
   UPDATE_EMAILS_VIA_SCIM("Will enable updating emails in Harness via SCIM", HarnessTeam.PL),
   ELK_HEALTH_SOURCE("Will enable ELK health source in SRM", HarnessTeam.CV),
-  SRM_COMPOSITE_SLO("Flag to start creating composite SLOs", HarnessTeam.CV),
   SRM_DOWNTIME("Flag to start creating downtime", HarnessTeam.CV),
   SRM_SLO_ANNOTATIONS("Flag to start creating SLO annotations", HarnessTeam.CV),
   CDP_USE_K8S_DECLARATIVE_ROLLBACK(
@@ -570,7 +569,6 @@ public enum FeatureName {
   PL_SIMPLIFY_ACL_CHECK("Evaluate access using role assignments instead of ACL's.", HarnessTeam.PL),
   CDS_ASG_NG("Supports Amazon ASG in NG", HarnessTeam.CDP),
   CDP_UPDATE_INSTANCE_DETAILS_WITH_IMAGE_SUFFIX("Update instance details if image suffix matches", HarnessTeam.CDP),
-  SRM_INTERNAL_CHANGE_SOURCE_FF("Control Feature Flag Internal Change Source On UI", HarnessTeam.CV),
   SRM_INTERNAL_CHANGE_SOURCE_CE("Control Chaos Engineering Internal Change Source from backend", HarnessTeam.CV),
   SRM_ENABLE_REQUEST_SLO("Control Request Based SLO feature on UI", HarnessTeam.CV),
   CD_NG_DYNAMIC_PROVISIONING_ENV_V2(

@@ -9,6 +9,7 @@ package io.harness.cvng.servicelevelobjective.services.impl;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.persistence.HQuery.excludeAuthorityCount;
 
+import io.harness.SRMPersistence;
 import io.harness.annotations.retry.RetryOnException;
 import io.harness.cvng.servicelevelobjective.beans.SLIEvaluationType;
 import io.harness.cvng.servicelevelobjective.beans.SLIMissingDataType;
@@ -19,7 +20,6 @@ import io.harness.cvng.servicelevelobjective.entities.SLIRecord;
 import io.harness.cvng.servicelevelobjective.services.api.CompositeSLORecordService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveV2Service;
 import io.harness.exception.InvalidArgumentsException;
-import io.harness.persistence.HPersistence;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.inject.Inject;
@@ -35,10 +35,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class CompositeSLORecordServiceImpl implements CompositeSLORecordService {
   private static final int RETRY_COUNT = 3;
-  @Inject private HPersistence hPersistence;
+  @Inject private SRMPersistence hPersistence;
 
   @Inject ServiceLevelObjectiveV2Service serviceLevelObjectiveV2Service;
 
@@ -67,7 +69,7 @@ public class CompositeSLORecordServiceImpl implements CompositeSLORecordService 
       List<CompositeSLORecord> compositeSLORecords = getCompositeSLORecordsFromSLIsDetails(
           serviceLevelObjectivesDetailCompositeSLORecordMap, objectivesDetailSLIMissingDataTypeMap, sloVersion,
           runningGoodCount, runningBadCount, verificationTaskId, sliEvaluationType);
-      hPersistence.save(compositeSLORecords);
+      hPersistence.saveBatch(compositeSLORecords);
     }
   }
 
@@ -208,7 +210,12 @@ public class CompositeSLORecordServiceImpl implements CompositeSLORecordService 
       throw new InvalidArgumentsException("Invalid Evaluation Type");
     }
 
-    hPersistence.save(updateOrCreateSLORecords);
+    try {
+      hPersistence.upsertBatch(CompositeSLORecord.class, updateOrCreateSLORecords, new ArrayList<>());
+    } catch (IllegalAccessException exception) {
+      log.error("SLO Records update failed through Bulk update {}", exception.getLocalizedMessage());
+      hPersistence.save(updateOrCreateSLORecords);
+    }
   }
 
   private List<CompositeSLORecord> updateWindowCompositeSLORecords(
