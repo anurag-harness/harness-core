@@ -494,10 +494,20 @@ public class GraphDataServiceImpl implements GraphDataService {
       startTime = firstRecordInRange.getTimestamp();
       endTime = lastRecordInRange.getTimestamp();
     }
-    List<Instant> minutes = getMinutes(startTime, endTime, numOfPoints);
-    minutes.add(firstRecord.getTimestamp());
-    minutes.add(lastRecord.getTimestamp());
-    return compositeSLORecordService.getSLORecordsOfMinutes(sloId, minutes);
+    List<Instant> minutes = getMinutesExclusiveOfStartAndEndTime(startTime, endTime, numOfPoints);
+    List<CompositeSLORecord> compositeSLORecords = new ArrayList<>();
+    compositeSLORecords.add(firstRecord);
+    if (!firstRecordInRange.getTimestamp().equals(firstRecord.getTimestamp())) {
+      compositeSLORecords.add(firstRecordInRange);
+    }
+    if (!minutes.isEmpty()) {
+      compositeSLORecords.addAll(compositeSLORecordService.getSLORecordsOfMinutes(sloId, minutes));
+    }
+    if (!lastRecordInRange.getTimestamp().equals(lastRecord.getTimestamp())) {
+      compositeSLORecords.add(lastRecordInRange);
+    }
+    compositeSLORecords.add(lastRecord);
+    return compositeSLORecords;
   }
 
   private List<SLIRecord> getSLIRecords(
@@ -518,14 +528,24 @@ public class GraphDataServiceImpl implements GraphDataService {
       startTime = firstRecordInRange.getTimestamp();
       endTime = lastRecordInRange.getTimestamp();
     }
-    List<Instant> minutes = getMinutes(startTime, endTime, numOfPoints);
-    minutes.add(firstRecord.getTimestamp());
-    minutes.add(lastRecord.getTimestamp()); // always include start and end minute.
-    return sliRecordService.getSLIRecordsOfMinutes(sliId, minutes);
+    List<Instant> minutes = getMinutesExclusiveOfStartAndEndTime(startTime, endTime, numOfPoints);
+    List<SLIRecord> sliRecords = new ArrayList<>();
+    sliRecords.add(firstRecord);
+    if (!firstRecordInRange.getTimestamp().equals(firstRecord.getTimestamp())) {
+      sliRecords.add(firstRecordInRange);
+    }
+    if (!minutes.isEmpty()) {
+      sliRecords.addAll(sliRecordService.getSLIRecordsOfMinutes(sliId, minutes));
+    }
+    if (!lastRecordInRange.getTimestamp().equals(lastRecord.getTimestamp())) {
+      sliRecords.add(lastRecordInRange);
+    }
+    sliRecords.add(lastRecord);
+    return sliRecords;
   }
 
   @VisibleForTesting
-  List<Instant> getMinutes(Instant startTime, Instant endTime, long numOfPointsInBetween) {
+  List<Instant> getMinutesExclusiveOfStartAndEndTime(Instant startTime, Instant endTime, long numOfPointsInBetween) {
     List<Instant> minutes = new ArrayList<>();
     long totalMinutes = Duration.between(startTime, endTime).toMinutes();
     long diff = totalMinutes;
@@ -537,10 +557,10 @@ public class GraphDataServiceImpl implements GraphDataService {
     }
     // long reminder = totalMinutes % maxNumberOfPoints;
     Duration diffDuration = Duration.ofMinutes(diff);
-    for (Instant current = startTime; current.isBefore(endTime); current = current.plus(diffDuration)) {
+    for (Instant current = startTime.plus(diffDuration); current.isBefore(endTime);
+         current = current.plus(diffDuration)) {
       minutes.add(current);
     }
-    minutes.add(endTime);
     return minutes;
   }
 }
