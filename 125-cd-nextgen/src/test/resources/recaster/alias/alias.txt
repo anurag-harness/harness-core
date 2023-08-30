@@ -857,6 +857,8 @@ io.harness.cdng.service.steps.sweepingoutput.GoogleFunctionsServiceCustomSweepin
 io.harness.pms.sdk.core.steps.io.EmptyStepParameters
 io.harness.cdng.configfile.steps.ConfigFilesStepV2SweepingOutput
 io.harness.cdng.pipeline.steps.CombinedRollbackSweepingOutput
+io.harness.cdng.service.beans.ServiceStepDetails
+io.harness.cdng.infra.beans.InfrastructureStepDetails
 io.harness.beans.yaml.extended.infrastrucutre.k8.SecurityContext
 io.harness.beans.outcomes.LiteEnginePodDetailsOutcome
 io.harness.beans.yaml.extended.CIShellType
