@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.service.rollback;
+package io.harness.ng.rollback;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -14,6 +14,6 @@ import io.harness.dtos.rollback.PostProdRollbackResponseDTO;
 
 @OwnedBy(HarnessTeam.CDP)
 public interface PostProdRollbackService {
-  PostProdRollbackCheckDTO checkIfRollbackAllowed(String instanceUuid);
-  PostProdRollbackResponseDTO triggerRollback(String instanceUuid);
+  PostProdRollbackCheckDTO checkIfRollbackAllowed(String accountIdentifier, String instanceUuid);
+  PostProdRollbackResponseDTO triggerRollback(String accountIdentifier, String instanceUuid);
 }

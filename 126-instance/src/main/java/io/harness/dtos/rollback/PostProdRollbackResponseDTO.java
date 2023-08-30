@@ -20,4 +20,5 @@ public class PostProdRollbackResponseDTO {
   boolean isRollbackTriggered;
   String instanceUuid;
   String planExecutionId;
+  String message;
 }

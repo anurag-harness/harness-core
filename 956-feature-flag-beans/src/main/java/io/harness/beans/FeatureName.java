@@ -432,6 +432,7 @@ public enum FeatureName {
       HarnessTeam.CDP),
 
   PIPELINE_ROLLBACK("Flag to enable/disable Pipeline Rollback", HarnessTeam.PIPELINE),
+  POST_PROD_ROLLBACK("Flag to enable/disable PostProd Rollback", HarnessTeam.PIPELINE),
   SPG_DISABLE_EXPIRING_TO_MANUAL_INTERVENTION_CANDIDATE(
       "Disable the expiration of stateExecutionInstances candidates of manual intervention", HarnessTeam.SPG),
   MERGE_RUNTIME_VARIABLES_IN_RESUME(

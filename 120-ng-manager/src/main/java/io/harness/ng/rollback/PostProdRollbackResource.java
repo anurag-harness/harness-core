@@ -14,7 +14,6 @@ import io.harness.dtos.rollback.PostProdRollbackCheckDTO;
 import io.harness.dtos.rollback.PostProdRollbackResponseDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.security.annotations.NextGenManagerAuth;
-import io.harness.service.rollback.PostProdRollbackService;
 
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
@@ -56,7 +55,7 @@ public class PostProdRollbackResource {
       @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @NotNull @PathParam("instanceUuid") String instanceUuid) {
-    return ResponseDTO.newResponse(postProdRollbackService.triggerRollback(instanceUuid));
+    return ResponseDTO.newResponse(postProdRollbackService.triggerRollback(accountIdentifier, instanceUuid));
   }
   @GET
   @Path("/check/{instanceUuid}")
@@ -68,6 +67,6 @@ public class PostProdRollbackResource {
       @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @NotNull @PathParam("instanceUuid") String instanceUuid) {
-    return ResponseDTO.newResponse(postProdRollbackService.checkIfRollbackAllowed(instanceUuid));
+    return ResponseDTO.newResponse(postProdRollbackService.checkIfRollbackAllowed(accountIdentifier, instanceUuid));
   }
 }
