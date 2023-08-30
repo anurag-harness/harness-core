@@ -8867,18 +8867,18 @@
     "KustomizeManifestCommandFlag": {
       "type": "object",
       "required": [
-        "kustomizeCommandFlagType"
+        "commandType"
       ],
       "properties": {
-        "flag": {
-          "type": "string",
-          "minLength": 1
-        },
-        "kustomizeCommandFlagType": {
+        "commandType": {
           "type": "string",
           "enum": [
             "Build"
           ]
+        },
+        "flag": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
