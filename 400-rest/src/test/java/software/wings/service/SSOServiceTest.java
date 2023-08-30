@@ -124,6 +124,7 @@ public class SSOServiceTest extends WingsBaseTest {
     account.setAccountName("account_name");
     account.setCompanyName("company_name");
     account.setUuid("accountId");
+    final String friendlySamlName = "testFriendlySamlName";
 
     account.setAuthenticationMechanism(AuthenticationMechanism.SAML);
     String xml = IOUtils.toString(getClass().getResourceAsStream("/okta-IDP-metadata.xml"), Charset.defaultCharset());
@@ -137,19 +138,22 @@ public class SSOServiceTest extends WingsBaseTest {
         "https://dev-274703.oktapreview.com/app/harnessiodev274703_testapp_1/exkefa5xlgHhrU1Mc0h7/sso/saml");
     mockSamlSettings.setMetaDataFile(xml);
     mockSamlSettings.setDisplayName("Okta");
+    mockSamlSettings.setFriendlySamlName(friendlySamlName);
     when(SSO_SETTING_SERVICE.getSamlSettingsByAccountId(anyString())).thenReturn(mockSamlSettings);
 
     SSOConfig settings = ssoService.uploadSamlConfiguration(account.getUuid(),
         getClass().getResourceAsStream("/okta-IDP-metadata.xml"), "Okta", "group", true, logoutUrl, "app.harness.io",
-        SAMLProviderType.OKTA.name(), anyString(), any(), false);
+        SAMLProviderType.OKTA.name(), anyString(), any(), friendlySamlName, false);
     String idpRedirectUrl = ((SamlSettings) settings.getSsoSettings().get(0)).getUrl();
     assertThat(idpRedirectUrl)
         .isEqualTo("https://dev-274703.oktapreview.com/app/harnessiodev274703_testapp_1/exkefa5xlgHhrU1Mc0h7/sso/saml");
     assertThat(settings.getSsoSettings().get(0).getDisplayName()).isEqualTo("Okta");
+    assertThat(((SamlSettings) settings.getSsoSettings().get(0)).getFriendlySamlName()).isEqualTo(friendlySamlName);
 
     try {
       ssoService.uploadSamlConfiguration(account.getUuid(), getClass().getResourceAsStream("/SamlResponse.txt"), "Okta",
-          "group", true, logoutUrl, "app.harness.io", SAMLProviderType.OKTA.name(), anyString(), any(), false);
+          "group", true, logoutUrl, "app.harness.io", SAMLProviderType.OKTA.name(), anyString(), any(),
+          friendlySamlName, false);
       failBecauseExceptionWasNotThrown(WingsException.class);
     } catch (WingsException e) {
       assertThat(e.getMessage()).isEqualTo(ErrorCode.INVALID_SAML_CONFIGURATION.name());
