@@ -21,6 +21,7 @@ import io.harness.cvng.migration.list.AddMonitoredServiceToChangeSourceMigration
 import io.harness.cvng.migration.list.AddMonitoredServiceToHeatMapMigration;
 import io.harness.cvng.migration.list.AddMonitoredServiceToWebhookMigration;
 import io.harness.cvng.migration.list.AddMonitoringSourcesToVerificationJobMigration;
+import io.harness.cvng.migration.list.AddSLIEvaluationTypeToSLOMigration;
 import io.harness.cvng.migration.list.AddStartedAtToServiceLevelObjectiveV2;
 import io.harness.cvng.migration.list.AddTaskInfoToVerificationTask;
 import io.harness.cvng.migration.list.AddTypeToServiceLevelObjectivesV2;
@@ -133,7 +134,8 @@ public class CVNGBackgroundMigrationList {
         .add(Pair.of(58, UpdateELKCVConfigToNextGenCVConfig.class))
         .add(Pair.of(59, MigrateSLOTargetInSLOV2.class))
         .add(Pair.of(60, ELKMigrationCreateVerificationTaskLiveMonitoring.class))
-        .add(Pair.of(61, OrphanMonitoredServicesCleanup.class))
+        .add(Pair.of(61, AddSLIEvaluationTypeToSLOMigration.class))
+        .add(Pair.of(62, OrphanMonitoredServicesCleanup.class))
         .build();
   }
 }
