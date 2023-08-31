@@ -728,7 +728,10 @@ public enum FeatureName {
   CIE_USE_DOCKER_BUILDX("Enable docker build and push step to use buildx", HarnessTeam.CI),
   CDS_STAGE_EXECUTION_DATA_SYNC(
       "This flag controls if you want CD Stage execution data saved in cd service and eventually synced to timescale",
-      HarnessTeam.CDC);
+      HarnessTeam.CDC),
+  PL_NEW_PAGE_SIZE(
+      "Enables new default page size for several listing pages like pipelines, access control, executions, connectors, etc.",
+      HarnessTeam.PL);
 
   @Deprecated
   FeatureName() {
