@@ -799,7 +799,7 @@ public class TemplateMergeServiceHelper {
             uuidToErrorMessageMap.put(randomUuid, errorDTO);
           }
         } else {
-          String error = validateStaticValues(templateValue, linkedTemplateInputValue);
+          String error = validateStaticValues(templateValue, linkedTemplateInputValue, key.getExpressionFqn());
           if (isNotEmpty(error)) {
             String randomUuid = UUID.randomUUID().toString();
             linkedTemplateInputsConfig.getFqnToValueMap().put(key, randomUuid);
