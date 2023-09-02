@@ -5,22 +5,20 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.template.beans;
+package io.harness.template.resources.beans;
 
-import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
+import static io.harness.annotations.dev.HarnessTeam.CDC;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.Scope;
 
 import lombok.Builder;
 import lombok.Data;
 
-@OwnedBy(PIPELINE)
+@OwnedBy(CDC)
 @Data
 @Builder
-public class GetTemplateEntityRequest {
-  Scope scope;
+public class TemplateUniqueIdentifier {
   String templateIdentifier;
-  String version;
-  boolean loadFromCache;
+  String versionLabel;
+  String versionMaker;
 }

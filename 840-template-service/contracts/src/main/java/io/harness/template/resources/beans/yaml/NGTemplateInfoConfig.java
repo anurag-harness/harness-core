@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/06/PolyForm-Shield-1.0.0.txt.
  */
 
-package io.harness.template.beans.yaml;
+package io.harness.template.resources.beans.yaml;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -15,7 +15,7 @@ import io.harness.data.validator.EntityName;
 import io.harness.jackson.JsonNodeUtils;
 import io.harness.ng.core.template.TemplateEntityType;
 import io.harness.pms.yaml.ParameterField;
-import io.harness.template.beans.NGTemplateConstants;
+import io.harness.template.resources.beans.NGTemplateConstants;
 import io.harness.validator.NGRegexValidatorConstants;
 import io.harness.yaml.core.variables.NGVariable;
 
