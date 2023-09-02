@@ -911,7 +911,7 @@ public class NGTriggerServiceImpl implements NGTriggerService {
       if (!validationResult.isSuccess()) {
         ngTriggerEntity.setEnabled(false);
       }
-      return updateTriggerWithValidationStatus(ngTriggerEntity, validationResult);
+      return updateTriggerWithValidationStatus(ngTriggerEntity, validationResult, false);
     } catch (Exception e) {
       log.error(String.format("Failed in trigger validation for Trigger: %s", ngTriggerEntity.getIdentifier()), e);
     }
@@ -923,7 +923,7 @@ public class NGTriggerServiceImpl implements NGTriggerService {
   failure in Polling, etc
    */
   public NGTriggerEntity updateTriggerWithValidationStatus(
-      NGTriggerEntity ngTriggerEntity, ValidationResult validationResult) {
+      NGTriggerEntity ngTriggerEntity, ValidationResult validationResult, boolean whileExecution) {
     String identifier = ngTriggerEntity.getIdentifier();
     Criteria criteria = getTriggerEqualityCriteriaWithoutDbVersion(ngTriggerEntity, false);
     boolean needsUpdate = false;
@@ -947,7 +947,9 @@ public class NGTriggerServiceImpl implements NGTriggerService {
                                                                  .statusResult(StatusResult.FAILED)
                                                                  .detailedMessage(validationResult.getMessage())
                                                                  .build());
-      ngTriggerEntity.setEnabled(false);
+      if (!whileExecution) {
+        ngTriggerEntity.setEnabled(false);
+      }
       needsUpdate = true;
     }
 
