@@ -60,6 +60,7 @@ You can run multiple PR check triggers by comma separating them in a single comm
 - Trigger all Checks: `trigger smartchecks`
 - Go Build: `trigger gobuild`
 - Validate_Reviews: `trigger review`
+- Module Dependency Check: `trigger mdc`
 </details>
 
 ## PR check failures and solutions
