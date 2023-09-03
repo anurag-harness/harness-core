@@ -743,7 +743,9 @@ public enum FeatureName {
       "Will fire the artifact and manifest triggers for all the versions in the polling response instead of the latest only",
       HarnessTeam.SPG),
   PIE_MULTISELECT_AND_COMMA_IN_ALLOWED_VALUES(
-      "Will allow comma and multi-selection in runtime input allowed values", PIPELINE);
+      "Will allow comma and multi-selection in runtime input allowed values", PIPELINE),
+  PL_USE_CREDENTIALS_FROM_DELEGATE_FOR_GCP_SM(
+      "Enables the use of credentials from Delegate in GCP Secret Manager", HarnessTeam.PL);
 
   @Deprecated
   FeatureName() {
