@@ -15,6 +15,7 @@ config:
     - "scripts/jenkins/**/*"
     - "scripts/terraform/**/*"
     - "on-prem/**/*"
+    - "charts/**/*"
     - "docs/**/*"
     - "licenses/**/*"
     - "img/**/*"
