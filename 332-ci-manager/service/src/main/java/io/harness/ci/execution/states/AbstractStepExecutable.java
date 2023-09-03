@@ -626,6 +626,7 @@ public abstract class AbstractStepExecutable extends CiAsyncExecutable {
     }
   }
 
+  // Todo: Merge with PluginUtil#getDelegateTaskForPluginStep when PR#47033 is merged.
   private String queueK8DelegateTask(Ambiance ambiance, long timeout, String accountId, CIDelegateTaskExecutor executor,
       UnitStep unitStep, String executionId) {
     LiteEnginePodDetailsOutcome liteEnginePodDetailsOutcome = (LiteEnginePodDetailsOutcome) outcomeService.resolve(
