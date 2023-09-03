@@ -745,7 +745,8 @@ public enum FeatureName {
   PIE_MULTISELECT_AND_COMMA_IN_ALLOWED_VALUES(
       "Will allow comma and multi-selection in runtime input allowed values", PIPELINE),
   PL_USE_CREDENTIALS_FROM_DELEGATE_FOR_GCP_SM(
-      "Enables the use of credentials from Delegate in GCP Secret Manager", HarnessTeam.PL);
+      "Enables the use of credentials from Delegate in GCP Secret Manager", HarnessTeam.PL),
+  CI_ENABLE_DLC("Enable docker layer caching", HarnessTeam.CI);
 
   @Deprecated
   FeatureName() {

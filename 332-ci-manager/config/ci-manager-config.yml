@@ -198,6 +198,7 @@ ciExecutionServiceConfig:
     bucket: "bucket"
     accessKey: "access_key"
     secretKey: "secret_key"
+    region: "region"
   hostedVmConfig:
     splitLinuxAmd64Pool: false
     splitLinuxArm64Pool: false
