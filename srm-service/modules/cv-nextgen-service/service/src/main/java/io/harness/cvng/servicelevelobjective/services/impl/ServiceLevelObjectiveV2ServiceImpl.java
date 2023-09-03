@@ -490,7 +490,8 @@ public class ServiceLevelObjectiveV2ServiceImpl implements ServiceLevelObjective
             .filter(ServiceLevelObjectiveV2Keys.projectIdentifier, projectParams.getProjectIdentifier())
             .filter(SimpleServiceLevelObjectiveKeys.monitoredServiceIdentifier, monitoredServiceIdentifier),
         hPersistence.createUpdateOperations(SimpleServiceLevelObjective.class)
-            .set(ServiceLevelObjectiveV2Keys.enabled, isEnabled));
+            .set(ServiceLevelObjectiveV2Keys.enabled, isEnabled)
+            .set(ServiceLevelObjectiveV2Keys.lastUpdatedAt, clock.millis()));
   }
 
   @Override
@@ -1020,6 +1021,7 @@ public class ServiceLevelObjectiveV2ServiceImpl implements ServiceLevelObjective
     }
     updateOperations.set(ServiceLevelObjectiveV2Keys.notificationRuleRefs,
         getNotificationRuleRefs(projectParams, abstractServiceLevelObjective, serviceLevelObjectiveV2DTO));
+    updateOperations.set(ServiceLevelObjectiveV2Keys.lastUpdatedAt, clock.millis());
     hPersistence.update(abstractServiceLevelObjective, updateOperations);
     abstractServiceLevelObjective = getEntity(projectParams, abstractServiceLevelObjective.getIdentifier());
     return abstractServiceLevelObjective;
