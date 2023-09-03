@@ -685,6 +685,8 @@ public enum FeatureName {
       HarnessTeam.CDP),
   CDS_NG_TRIGGER_AUTHENTICATION_WITH_DELEGATE_SELECTOR(
       "Make NG Trigger authentication use the same delegate selectors as the secret's manager", HarnessTeam.CDC),
+
+  CDS_TRIGGER_ACTIVITY_PAGE("NG Triggers Activity page", HarnessTeam.CDC),
   CDS_PROJECT_SCOPED_RESOURCE_CONSTRAINT_QUEUE(
       "With enabling this FF with serviceV2 setup, pipeline in different projects but having the same infra key can be executed parallely",
       HarnessTeam.CDC),
