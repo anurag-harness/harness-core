@@ -164,9 +164,9 @@ public class AzureRecommendationServiceImpl implements AzureRecommendationServic
     AzureVmDetails targetVmDetails =
         getVirtualMachineDetails(targetSku, virtualMachineSizeInners, currentSkuCost - currentSkuMonthlySavings);
 
-    double currentSkuAvgCpuUtilisation =
+    Double currentSkuAvgCpuUtilisation =
         azureCpuUtilisationService.getAverageAzureVmCpuUtilisationData(vmId, accountId);
-    double targetSkuAvgCpuUtilisation = getTargetAverageAzureVmCpuUtilisation(
+    Double targetSkuAvgCpuUtilisation = getTargetAverageAzureVmCpuUtilisation(
         currentVmDetails.getNumberOfCores(), targetVmDetails.getNumberOfCores(), currentSkuAvgCpuUtilisation);
     currentVmDetails.setCpuUtilisation(currentSkuAvgCpuUtilisation);
     targetVmDetails.setCpuUtilisation(targetSkuAvgCpuUtilisation);
@@ -227,10 +227,13 @@ public class AzureRecommendationServiceImpl implements AzureRecommendationServic
     return price;
   }
 
-  private double getTargetAverageAzureVmCpuUtilisation(
-      int currentNumberOfCores, int targetNumberOfCores, double currentSkuAvgCpuUtilisation) {
+  private Double getTargetAverageAzureVmCpuUtilisation(
+      int currentNumberOfCores, int targetNumberOfCores, Double currentSkuAvgCpuUtilisation) {
     if (targetNumberOfCores == 0) {
       return 0.0;
+    }
+    if (currentSkuAvgCpuUtilisation == null) {
+      return null;
     }
     return (currentSkuAvgCpuUtilisation * currentNumberOfCores) / targetNumberOfCores;
   }

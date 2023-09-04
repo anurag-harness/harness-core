@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @OwnedBy(CE)
 public class AzureCpuUtilisationService {
-  private static final String AVERAGE_QUERY_TEMPLATE_BIGQUERY = "SELECT COALESCE(avg(average),0.0) as average"
+  private static final String AVERAGE_QUERY_TEMPLATE_BIGQUERY = "SELECT avg(average) as average"
       + " FROM %s WHERE (TIMESTAMP_TRUNC(metricStartTime, DAY) >= '%s') AND"
       + " vmId = '%s' AND metricName = 'Percentage CPU'";
 
@@ -42,7 +42,7 @@ public class AzureCpuUtilisationService {
   @Inject private BigQueryService bigQueryService;
   @Inject private BigQueryHelper bigQueryHelper;
 
-  public double getAverageAzureVmCpuUtilisationData(String vmId, String accountIdentifier) {
+  public Double getAverageAzureVmCpuUtilisationData(String vmId, String accountIdentifier) {
     long startTime = getStartOfLastMonth();
     String cloudProviderTableName =
         bigQueryHelper.getCloudProviderTableName(accountIdentifier, AZURE_VM_INVENTORY_METRIC);
@@ -55,12 +55,12 @@ public class AzureCpuUtilisationService {
     try {
       result = bigQuery.query(queryConfig);
       for (FieldValueList row : result.iterateAll()) {
-        return row.get(AVERAGE).getDoubleValue();
+        return row.get(AVERAGE).getValue() == null ? null : row.get(AVERAGE).getDoubleValue();
       }
     } catch (InterruptedException e) {
       log.error("Failed to get Azure VM Cpu Utilisation for Account:{}, {}", accountIdentifier, e);
     }
-    return 0.0;
+    return null;
   }
 
   private long getStartOfLastMonth() {
