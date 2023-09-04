@@ -8,7 +8,6 @@
 package software.wings.beans.sso;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import static software.wings.settings.SettingVariableTypes.SSO_SAML;
@@ -51,6 +50,8 @@ public class SamlSettings extends SSOSettings implements EncryptableSetting {
   @Encrypted(fieldName = "clientSecret") private char[] clientSecret;
   @SchemaIgnore private String encryptedClientSecret;
   private String friendlySamlName;
+  private boolean configuredFromNG;
+  private boolean authenticationEnabled;
 
   @JsonCreator
   @Builder
@@ -72,7 +73,7 @@ public class SamlSettings extends SSOSettings implements EncryptableSetting {
     this.samlProviderType = samlProviderType;
     this.clientId = clientId;
     this.clientSecret = clientSecret == null ? null : clientSecret.clone();
-    this.friendlySamlName = isEmpty(friendlySamlName) ? displayName : friendlySamlName;
+    this.friendlySamlName = friendlySamlName;
   }
 
   @Override

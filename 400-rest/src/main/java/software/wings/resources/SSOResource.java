@@ -148,7 +148,7 @@ public class SSOResource {
       @FormDataParam("clientSecret") String clientSecret) {
     return new RestResponse<>(ssoService.updateSamlConfiguration(accountId, uploadedInputStream, displayName,
         groupMembershipAttr, authorizationEnabled, logoutUrl, entityIdentifier, samlProviderType, clientId,
-        isEmpty(clientSecret) ? null : clientSecret.toCharArray(), null, false));
+        isEmpty(clientSecret) ? null : clientSecret.toCharArray(), false));
   }
 
   @PUT
@@ -174,7 +174,7 @@ public class SSOResource {
   @ExceptionMetered
   public RestResponse<SSOConfig> setAuthMechanism(@QueryParam("accountId") String accountId,
       @QueryParam("authMechanism") AuthenticationMechanism authenticationMechanism) {
-    return new RestResponse<SSOConfig>(ssoService.setAuthenticationMechanism(accountId, authenticationMechanism));
+    return new RestResponse<>(ssoService.setAuthenticationMechanism(accountId, authenticationMechanism, false));
   }
 
   @PUT
@@ -195,7 +195,7 @@ public class SSOResource {
       throw new InvalidRequestException(response.getMessage());
     }
 
-    return new RestResponse<>(ssoService.setAuthenticationMechanism(accountId, AuthenticationMechanism.LDAP));
+    return new RestResponse<>(ssoService.setAuthenticationMechanism(accountId, AuthenticationMechanism.LDAP, false));
   }
 
   @PUT
@@ -203,7 +203,7 @@ public class SSOResource {
   @Timed
   @ExceptionMetered
   public RestResponse<SSOConfig> enableSamlAuthMechanism(@QueryParam("accountId") String accountId) {
-    return new RestResponse<>(ssoService.setAuthenticationMechanism(accountId, AuthenticationMechanism.SAML));
+    return new RestResponse<>(ssoService.setAuthenticationMechanism(accountId, AuthenticationMechanism.SAML, false));
   }
 
   @PUT
@@ -211,7 +211,7 @@ public class SSOResource {
   @Timed
   @ExceptionMetered
   public RestResponse<SSOConfig> enableOauthAuthMechanism(@QueryParam("accountId") String accountId) {
-    return new RestResponse<>(ssoService.setAuthenticationMechanism(accountId, AuthenticationMechanism.OAUTH));
+    return new RestResponse<>(ssoService.setAuthenticationMechanism(accountId, AuthenticationMechanism.OAUTH, false));
   }
 
   @PUT
@@ -219,7 +219,8 @@ public class SSOResource {
   @Timed
   @ExceptionMetered
   public RestResponse<SSOConfig> enableBasicAuthMechanism(@QueryParam("accountId") String accountId) {
-    return new RestResponse<>(ssoService.setAuthenticationMechanism(accountId, AuthenticationMechanism.USER_PASSWORD));
+    return new RestResponse<>(
+        ssoService.setAuthenticationMechanism(accountId, AuthenticationMechanism.USER_PASSWORD, false));
   }
 
   @GET

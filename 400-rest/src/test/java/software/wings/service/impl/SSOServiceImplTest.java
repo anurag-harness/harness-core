@@ -8,6 +8,7 @@
 package software.wings.service.impl;
 
 import static io.harness.annotations.dev.HarnessModule._950_NG_AUTHENTICATION_SERVICE;
+import static io.harness.beans.FeatureName.PL_ENABLE_MULTIPLE_IDP_SUPPORT;
 import static io.harness.ng.core.account.AuthenticationMechanism.LDAP;
 import static io.harness.ng.core.account.AuthenticationMechanism.OAUTH;
 import static io.harness.ng.core.account.AuthenticationMechanism.SAML;
@@ -131,25 +132,25 @@ public class SSOServiceImplTest extends WingsBaseTest {
 
     // UP -> UP + OA - enable oauth
     ssoService.uploadOauthConfiguration(account.getUuid(), "", Sets.newHashSet(OauthProviderType.values()));
-    ssoService.setAuthenticationMechanism(account.getUuid(), OAUTH);
+    ssoService.setAuthenticationMechanism(account.getUuid(), OAUTH, false);
     account = accountService.get(account.getUuid());
     assertThat(account.getAuthenticationMechanism()).isEqualTo(USER_PASSWORD);
     assertThat(account.isOauthEnabled()).isTrue();
 
     // UP + OA -> OA - disable user password
-    ssoService.setAuthenticationMechanism(account.getUuid(), OAUTH);
+    ssoService.setAuthenticationMechanism(account.getUuid(), OAUTH, false);
     account = accountService.get(account.getUuid());
     assertThat(account.getAuthenticationMechanism()).isEqualTo(OAUTH);
     assertThat(account.isOauthEnabled()).isTrue();
 
     // OA -> UP + OA - enable user password
-    ssoService.setAuthenticationMechanism(account.getUuid(), USER_PASSWORD);
+    ssoService.setAuthenticationMechanism(account.getUuid(), USER_PASSWORD, false);
     account = accountService.get(account.getUuid());
     assertThat(account.getAuthenticationMechanism()).isEqualTo(USER_PASSWORD);
     assertThat(account.isOauthEnabled()).isTrue();
 
     // UP + OA -> UP - disable oauth
-    ssoService.setAuthenticationMechanism(account.getUuid(), USER_PASSWORD);
+    ssoService.setAuthenticationMechanism(account.getUuid(), USER_PASSWORD, false);
     account = accountService.get(account.getUuid());
     assertThat(account.getAuthenticationMechanism()).isEqualTo(USER_PASSWORD);
     assertThat(account.isOauthEnabled()).isFalse();
@@ -185,7 +186,7 @@ public class SSOServiceImplTest extends WingsBaseTest {
     // Upload SAML config and enable
     ssoService.uploadSamlConfiguration(accountId, new ByteArrayInputStream("test data".getBytes()), "test", "", false,
         "", "", SAMLProviderType.ONELOGIN.name(), anyString(), any(), "testOtherSamlName", false);
-    ssoService.setAuthenticationMechanism(accountId, SAML);
+    ssoService.setAuthenticationMechanism(accountId, SAML, false);
     account = accountService.get(account.getUuid());
     assertThat(account.getAuthenticationMechanism()).isEqualTo(SAML);
     assertThat(account.isOauthEnabled()).isFalse();
@@ -222,7 +223,7 @@ public class SSOServiceImplTest extends WingsBaseTest {
     // Upload SAML config and enable
     ssoService.uploadSamlConfiguration(accountId, new ByteArrayInputStream("test data".getBytes()), "test", "", false,
         "", "", SAMLProviderType.ONELOGIN.name(), anyString(), any(), "testOtherSamlName", false);
-    ssoService.setAuthenticationMechanism(accountId, SAML);
+    ssoService.setAuthenticationMechanism(accountId, SAML, false);
     account = accountService.get(account.getUuid());
     assertThat(account.getAuthenticationMechanism()).isEqualTo(SAML);
     assertThat(account.isOauthEnabled()).isFalse();
@@ -249,7 +250,8 @@ public class SSOServiceImplTest extends WingsBaseTest {
                           .withAuthenticationMechanism(USER_PASSWORD)
                           .build();
     accountService.save(account, false);
-    ssoService.setAuthenticationMechanism(account.getUuid(), SAML);
+    when(featureFlagService.isNotEnabled(PL_ENABLE_MULTIPLE_IDP_SUPPORT, account.getUuid())).thenReturn(true);
+    ssoService.setAuthenticationMechanism(account.getUuid(), SAML, false);
     account = accountService.get(account.getUuid());
     assertThat(account.getAuthenticationMechanism()).isEqualTo(SAML);
     assertThat(account.isOauthEnabled()).isFalse();
@@ -270,7 +272,7 @@ public class SSOServiceImplTest extends WingsBaseTest {
                           .withAuthenticationMechanism(USER_PASSWORD)
                           .build();
     accountService.save(account, false);
-    ssoService.setAuthenticationMechanism(account.getUuid(), LDAP);
+    ssoService.setAuthenticationMechanism(account.getUuid(), LDAP, false);
     account = accountService.get(account.getUuid());
     assertThat(account.getAuthenticationMechanism()).isEqualTo(LDAP);
     assertThat(account.isOauthEnabled()).isFalse();
@@ -327,7 +329,7 @@ public class SSOServiceImplTest extends WingsBaseTest {
     assertThat(account.getAuthenticationMechanism()).isEqualTo(USER_PASSWORD);
     assertThat(account.isOauthEnabled()).isFalse();
 
-    ssoService.setAuthenticationMechanism(account.getUuid(), OAUTH);
+    ssoService.setAuthenticationMechanism(account.getUuid(), OAUTH, false);
     account = accountService.get(account.getUuid());
     assertThat(account.getAuthenticationMechanism()).isEqualTo(USER_PASSWORD);
     assertThat(account.isOauthEnabled()).isTrue();
@@ -448,7 +450,8 @@ public class SSOServiceImplTest extends WingsBaseTest {
                           .build();
     accountService.save(account, false);
 
-    ssoService.setAuthenticationMechanism(account.getUuid(), SAML);
+    when(featureFlagService.isNotEnabled(PL_ENABLE_MULTIPLE_IDP_SUPPORT, account.getUuid())).thenReturn(true);
+    ssoService.setAuthenticationMechanism(account.getUuid(), SAML, false);
     List<OutboxEvent> outboxEvents = outboxService.list(OutboxEventFilter.builder().maximumEventsPolled(10).build());
     OutboxEvent outboxEvent = outboxEvents.get(outboxEvents.size() - 1);
 
@@ -463,7 +466,7 @@ public class SSOServiceImplTest extends WingsBaseTest {
     assertThat(loginSettingsAuthMechanismUpdateEvent.getNewAuthMechanismYamlDTO().getAuthenticationMechanism())
         .isEqualTo(SAML);
 
-    ssoService.setAuthenticationMechanism(account.getUuid(), LDAP);
+    ssoService.setAuthenticationMechanism(account.getUuid(), LDAP, false);
     outboxEvents = outboxService.list(OutboxEventFilter.builder().maximumEventsPolled(10).build());
     outboxEvent = outboxEvents.get(outboxEvents.size() - 1);
 
