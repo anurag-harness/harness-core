@@ -534,7 +534,7 @@ public class MonitoredServiceServiceImpl implements MonitoredServiceService {
                              .orgIdentifier(monitoredService.getOrgIdentifier())
                              .projectIdentifier(monitoredService.getProjectIdentifier())
                              .build());
-      setupUsageEventService.sendDeleteEventsForMonitoredService(projectParams, identifier);
+      setupUsageEventService.sendDeleteEventsForMonitoredService(projectParams, monitoredService);
       activityService.deleteByMonitoredServiceIdentifier(monitoredServiceParams);
     }
     return deleted;
