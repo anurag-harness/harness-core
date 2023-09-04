@@ -2034,8 +2034,35 @@ public class ServiceLevelObjectiveV2ServiceImplTest extends CvNextGenTestBase {
         .isEqualTo(1);
   }
 
+  @Test
+  @Owner(developers = DEEPAK_CHHIKARA)
+  @Category(UnitTests.class)
+  public void testGetRiskCount_withChildResourceFilter() {
+    riskCountSetup();
+    BuilderFactory builderFactory1 = BuilderFactory.builder().build();
+    builderFactory1.getContext().setAccountId(builderFactory.getContext().getAccountId());
+    builderFactory1.getContext().setOrgIdentifier("orgIdentifier1");
+    builderFactory1.getContext().setProjectIdentifier("project3");
+    createMonitoredService(builderFactory1);
+    ServiceLevelObjectiveV2DTO sloDTO =
+        builderFactory1.getSimpleServiceLevelObjectiveV2DTOBuilder().identifier("id1").name("id1").build();
+    serviceLevelObjectiveV2Service.create(builderFactory1.getProjectParams(), sloDTO);
+    SLORiskCountResponse sloRiskCountResponse = serviceLevelObjectiveV2Service.getRiskCount(
+        projectParams, SLODashboardApiFilter.builder().childResource(true).build());
+
+    assertThat(sloRiskCountResponse.getTotalCount()).isEqualTo(7);
+    assertThat(sloRiskCountResponse.getRiskCounts()).hasSize(5);
+    assertThat(sloRiskCountResponse.getRiskCounts()
+                   .stream()
+                   .filter(rc -> rc.getErrorBudgetRisk().equals(ErrorBudgetRisk.HEALTHY))
+                   .findAny()
+                   .get()
+                   .getCount())
+        .isEqualTo(7);
+  }
+
   private void riskCountSetup() {
-    createMonitoredService();
+    createMonitoredService(builderFactory);
     ServiceLevelObjectiveV2DTO sloDTO =
         builderFactory.getSimpleServiceLevelObjectiveV2DTOBuilder().identifier("id1").name("id1").build();
     serviceLevelObjectiveV2Service.create(projectParams, sloDTO);
@@ -3124,6 +3151,12 @@ public class ServiceLevelObjectiveV2ServiceImplTest extends CvNextGenTestBase {
   }
 
   private void createMonitoredService() {
+    MonitoredServiceDTO monitoredServiceDTO = builderFactory.monitoredServiceDTOBuilder().build();
+    monitoredServiceDTO.setSources(MonitoredServiceDTO.Sources.builder().build());
+    monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
+  }
+
+  private void createMonitoredService(BuilderFactory builderFactory) {
     MonitoredServiceDTO monitoredServiceDTO = builderFactory.monitoredServiceDTOBuilder().build();
     monitoredServiceDTO.setSources(MonitoredServiceDTO.Sources.builder().build());
     monitoredServiceService.create(builderFactory.getContext().getAccountId(), monitoredServiceDTO);
