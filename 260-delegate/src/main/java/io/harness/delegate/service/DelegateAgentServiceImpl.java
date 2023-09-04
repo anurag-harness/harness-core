@@ -47,15 +47,14 @@ import static io.harness.delegate.message.MessageConstants.WATCHER_PROCESS;
 import static io.harness.delegate.message.MessageConstants.WATCHER_VERSION;
 import static io.harness.delegate.message.MessengerType.DELEGATE;
 import static io.harness.delegate.message.MessengerType.WATCHER;
-import static io.harness.delegate.metrics.DelegateMetricsConstants.DELEGATE_CONNECTED;
-import static io.harness.delegate.metrics.DelegateMetricsConstants.RESOURCE_CONSUMPTION_ABOVE_THRESHOLD;
-import static io.harness.delegate.metrics.DelegateMetricsConstants.TASKS_CURRENTLY_EXECUTING;
-import static io.harness.delegate.metrics.DelegateMetricsConstants.TASKS_IN_QUEUE;
-import static io.harness.delegate.metrics.DelegateMetricsConstants.TASK_COMPLETED;
-import static io.harness.delegate.metrics.DelegateMetricsConstants.TASK_EXECUTION_TIME;
-import static io.harness.delegate.metrics.DelegateMetricsConstants.TASK_FAILED;
-import static io.harness.delegate.metrics.DelegateMetricsConstants.TASK_REJECTED;
-import static io.harness.delegate.metrics.DelegateMetricsConstants.TASK_TIMEOUT;
+import static io.harness.delegate.metrics.DelegateMetric.DELEGATE_CONNECTED;
+import static io.harness.delegate.metrics.DelegateMetric.RESOURCE_CONSUMPTION_ABOVE_THRESHOLD;
+import static io.harness.delegate.metrics.DelegateMetric.TASKS_CURRENTLY_EXECUTING;
+import static io.harness.delegate.metrics.DelegateMetric.TASK_COMPLETED;
+import static io.harness.delegate.metrics.DelegateMetric.TASK_EXECUTION_TIME;
+import static io.harness.delegate.metrics.DelegateMetric.TASK_FAILED;
+import static io.harness.delegate.metrics.DelegateMetric.TASK_REJECTED;
+import static io.harness.delegate.metrics.DelegateMetric.TASK_TIMEOUT;
 import static io.harness.eraro.ErrorCode.EXPIRED_TOKEN;
 import static io.harness.eraro.ErrorCode.INVALID_TOKEN;
 import static io.harness.eraro.ErrorCode.REVOKED_TOKEN;
@@ -184,7 +183,6 @@ import software.wings.service.intfc.security.EncryptionService;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.TimeLimiter;
 import com.google.common.util.concurrent.UncheckedTimeoutException;
 import com.google.inject.Inject;
@@ -743,9 +741,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
           "Reached resource threshold, temporarily reject incoming task request. CurrentProcessRSSMB {} ThresholdMB {}",
           currentRSSMB, maxProcessRSSThresholdMB);
       rejectRequest.compareAndSet(false, true);
-      metricRegistry.recordGaugeValue(RESOURCE_CONSUMPTION_ABOVE_THRESHOLD, new String[] {DELEGATE_NAME}, 1.0);
-      metricRegistry.registerCounterMetric(
-          TASK_REJECTED, new String[] {DELEGATE_NAME}, "Total number of task rejected");
+      metricRegistry.recordGaugeValue(
+          RESOURCE_CONSUMPTION_ABOVE_THRESHOLD.getMetricName(), new String[] {DELEGATE_NAME}, 1.0);
+      metricRegistry.recordCounterInc(TASK_REJECTED.getMetricName(), new String[] {DELEGATE_NAME});
       return;
     }
 
@@ -755,9 +753,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
           "Reached resource threshold, temporarily reject incoming task request. CurrentPodRSSMB {} ThresholdMB {}",
           currentPodRSSMB, maxPodRSSThresholdMB);
       rejectRequest.compareAndSet(false, true);
-      metricRegistry.recordGaugeValue(RESOURCE_CONSUMPTION_ABOVE_THRESHOLD, new String[] {DELEGATE_NAME}, 1.0);
-      metricRegistry.registerCounterMetric(
-          TASK_REJECTED, new String[] {DELEGATE_NAME}, "Total number of task rejected");
+      metricRegistry.recordGaugeValue(
+          RESOURCE_CONSUMPTION_ABOVE_THRESHOLD.getMetricName(), new String[] {DELEGATE_NAME}, 1.0);
+      metricRegistry.recordCounterInc(TASK_REJECTED.getMetricName(), new String[] {DELEGATE_NAME});
       return;
     }
     log.debug("Process info CurrentProcessRSSMB {} ThresholdProcessMB {} currentPodRSSMB {} ThresholdPodMemoryMB {}",
@@ -766,9 +764,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     if (cpuLoad > RESOURCE_USAGE_THRESHOLD) {
       log.warn("CPU consumption above threshold, {}%", BigDecimal.valueOf(cpuLoad));
       rejectRequest.compareAndSet(false, true);
-      metricRegistry.recordGaugeValue(RESOURCE_CONSUMPTION_ABOVE_THRESHOLD, new String[] {DELEGATE_NAME}, 1.0);
-      metricRegistry.registerCounterMetric(
-          TASK_REJECTED, new String[] {DELEGATE_NAME}, "Total number of task rejected");
+      metricRegistry.recordGaugeValue(
+          RESOURCE_CONSUMPTION_ABOVE_THRESHOLD.getMetricName(), new String[] {DELEGATE_NAME}, 1.0);
+      metricRegistry.recordCounterInc(TASK_REJECTED.getMetricName(), new String[] {DELEGATE_NAME});
       return;
     }
 
@@ -776,7 +774,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       log.info(
           "Accepting incoming task request. CurrentProcessRSSMB {} ThresholdProcessMB {} currentPodRSSMB {} ThresholdPodMemoryMB {}",
           currentRSSMB, maxProcessRSSThresholdMB, currentPodRSSMB, maxPodRSSThresholdMB);
-      metricRegistry.recordGaugeValue(RESOURCE_CONSUMPTION_ABOVE_THRESHOLD, new String[] {DELEGATE_NAME}, 0.0);
+      metricRegistry.recordGaugeValue(
+          RESOURCE_CONSUMPTION_ABOVE_THRESHOLD.getMetricName(), new String[] {DELEGATE_NAME}, 0.0);
     }
   }
 
@@ -864,17 +863,17 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   private void handleOpen(Object o) {
     log.info("Event:{}, message:[{}]", Event.OPEN.name(), o.toString());
-    metricRegistry.recordGaugeValue(DELEGATE_CONNECTED, new String[] {DELEGATE_NAME}, 1.0);
+    metricRegistry.recordGaugeValue(DELEGATE_CONNECTED.getMetricName(), new String[] {DELEGATE_NAME}, 1.0);
   }
 
   private void handleClose(Object o) {
     log.info("Event:{}, trying to reconnect, message:[{}]", Event.CLOSE.name(), o);
-    metricRegistry.recordGaugeValue(DELEGATE_CONNECTED, new String[] {DELEGATE_NAME}, 0.0);
+    metricRegistry.recordGaugeValue(DELEGATE_CONNECTED.getMetricName(), new String[] {DELEGATE_NAME}, 0.0);
   }
 
   private void handleError(final Exception e) {
     log.info("Event:{}", Event.ERROR.name(), e);
-    metricRegistry.recordGaugeValue(DELEGATE_CONNECTED, new String[] {DELEGATE_NAME}, 0.0);
+    metricRegistry.recordGaugeValue(DELEGATE_CONNECTED.getMetricName(), new String[] {DELEGATE_NAME}, 0.0);
   }
 
   private void finalizeSocket() {
@@ -2160,8 +2159,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
     // Start task execution in same thread and measure duration.
     if (isImmutableDelegate) {
-      metricRegistry.recordGaugeDuration(
-          TASK_EXECUTION_TIME, new String[] {DELEGATE_NAME, taskData.getTaskType()}, delegateRunnableTask);
+      metricRegistry.recordGaugeDuration(TASK_EXECUTION_TIME.getMetricName(),
+          new String[] {DELEGATE_NAME, taskData.getTaskType()}, delegateRunnableTask);
     } else {
       delegateRunnableTask.run();
     }
@@ -2426,7 +2425,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     }
     if (stillRunning) {
       log.error("Task {} of taskType {} timed out after {} milliseconds", taskId, taskData.getTaskType(), timeout);
-      metricRegistry.recordGaugeInc(TASK_TIMEOUT, new String[] {DELEGATE_NAME, taskData.getTaskType()});
+      metricRegistry.recordCounterInc(
+          TASK_TIMEOUT.getMetricName(), new String[] {DELEGATE_NAME, taskData.getTaskType()});
       Optional.ofNullable(currentlyExecutingFutures.get(taskId).getTaskFuture())
           .ifPresent(future -> future.cancel(true));
     }
@@ -2446,28 +2446,6 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     currentlyExecutingTasks.remove(taskId);
     if (currentlyExecutingFutures.remove(taskId) != null) {
       log.info("Removed {} from executing futures on timeout", taskId);
-    }
-  }
-
-  private void replaceRunScripts(DelegateScripts delegateScripts) throws IOException {
-    for (String fileName : asList(START_SH, "stop.sh", "delegate.sh", "setup-proxy.sh")) {
-      Files.deleteIfExists(Paths.get(fileName));
-      File scriptFile = new File(fileName);
-      String script = delegateScripts.getScriptByName(fileName);
-
-      if (isNotEmpty(script)) {
-        try (BufferedWriter writer = Files.newBufferedWriter(scriptFile.toPath())) {
-          writer.write(script, 0, script.length());
-          writer.flush();
-        }
-        log.info("Done replacing file [{}]. Set User and Group permission", scriptFile);
-        Files.setPosixFilePermissions(scriptFile.toPath(),
-            Sets.newHashSet(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_EXECUTE,
-                PosixFilePermission.OWNER_WRITE, PosixFilePermission.GROUP_READ, PosixFilePermission.OTHERS_READ));
-        log.info(" Done setting file permissions");
-      } else {
-        log.error("Script for file [{}] was not replaced", scriptFile);
-      }
     }
   }
 
@@ -2744,10 +2722,9 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
 
   @Override
   public void recordMetrics() {
-    int tasksInQueueCount = ((ThreadPoolExecutor) taskExecutor).getQueue().size();
-    long tasksExecutionCount = ((ThreadPoolExecutor) taskExecutor).getActiveCount();
-    metricRegistry.recordGaugeValue(TASKS_IN_QUEUE, new String[] {DELEGATE_NAME}, tasksInQueueCount);
-    metricRegistry.recordGaugeValue(TASKS_CURRENTLY_EXECUTING, new String[] {DELEGATE_NAME}, tasksExecutionCount);
+    long tasksExecutionCount = taskExecutor.getActiveCount();
+    metricRegistry.recordGaugeValue(
+        TASKS_CURRENTLY_EXECUTING.getMetricName(), new String[] {DELEGATE_NAME}, tasksExecutionCount);
   }
 
   public void sendTaskResponse(final String taskId, final DelegateTaskResponse taskResponse) {
@@ -2758,8 +2735,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         response = delegateAgentManagerClient.sendTaskStatus(delegateId, taskId, accountId, taskResponse).execute();
         if (response != null && response.code() >= 200 && response.code() <= 299) {
           log.debug("Task {} type {},  response sent to manager", taskId, taskResponse.getTaskTypeName());
-          metricRegistry.registerCounterMetric(TASK_COMPLETED,
-              new String[] {DELEGATE_NAME, taskResponse.getTaskTypeName()}, "Total number of task completed");
+          metricRegistry.recordCounterInc(
+              TASK_COMPLETED.getMetricName(), new String[] {DELEGATE_NAME, taskResponse.getTaskTypeName()});
           break;
         }
         log.warn("Failed to send response for task {}: {}. error: {}. requested url: {} {}", taskId,
@@ -2776,8 +2753,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
       }
     } catch (IOException e) {
       log.error("Unable to send response to manager", e);
-      metricRegistry.registerCounterMetric(
-          TASK_FAILED, new String[] {DELEGATE_NAME, taskResponse.getTaskTypeName()}, "Total number of task failed");
+      metricRegistry.recordCounterInc(
+          TASK_FAILED.getMetricName(), new String[] {DELEGATE_NAME, taskResponse.getTaskTypeName()});
     } finally {
       if (response != null && response.errorBody() != null && !response.isSuccessful()) {
         response.errorBody().close();
@@ -2802,8 +2779,8 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
             .responseCode(DelegateTaskResponse.ResponseCode.FAILED)
             .response(ErrorNotifyResponseData.builder().errorMessage(ExceptionUtils.getMessage(exception)).build())
             .build();
-    metricRegistry.registerCounterMetric(
-        TASK_FAILED, new String[] {DELEGATE_NAME, taskResponse.getTaskTypeName()}, "Total number of task failed");
+    metricRegistry.recordCounterInc(
+        TASK_FAILED.getMetricName(), new String[] {DELEGATE_NAME, taskResponse.getTaskTypeName()});
     log.error("Sending error response for task{} due to exception", taskId, exception);
     try {
       Response<ResponseBody> resp;
