@@ -39,7 +39,8 @@ public interface SSOService {
       String groupMembershipAttr, Boolean authorizationEnabled, String logoutUrl, String entityIdentifier,
       String samlProviderType, String clientId, char[] clientSecret, String friendlySamlName, boolean isNGSSO);
 
-  SSOConfig uploadOauthConfiguration(String accountId, String filter, Set<OauthProviderType> allowedProviders);
+  SSOConfig uploadOauthConfiguration(
+      String accountId, String filter, Set<OauthProviderType> allowedProviders, boolean isNG);
 
   SSOConfig updateSamlConfiguration(@NotNull String accountId, InputStream inputStream, String displayName,
       String groupMembershipAttr, @NotNull Boolean authorizationEnabled, String logoutUrl, String entityIdentifier,
@@ -61,7 +62,7 @@ public interface SSOService {
   SSOConfig setAuthenticationMechanism(
       @NotNull String accountId, @NotNull AuthenticationMechanism authenticationMechanism, boolean isFromNG);
 
-  SSOConfig getAccountAccessManagementSettings(@NotNull String accountId);
+  SSOConfig getAccountAccessManagementSettings(@NotNull String accountId, boolean isNG);
 
   // this overloading is for NG case
   // SSOConfig getAccountAccessManagementSettings(@NotNull String accountId, boolean isNGSSO);

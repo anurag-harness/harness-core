@@ -35,7 +35,6 @@ import software.wings.security.PermissionAttribute.ResourceType;
 import software.wings.security.annotations.AuthRule;
 import software.wings.security.annotations.Scope;
 import software.wings.security.authentication.LoginTypeResponse;
-import software.wings.security.authentication.LoginTypeResponse.LoginTypeResponseBuilder;
 import software.wings.security.authentication.SSOConfig;
 import software.wings.security.saml.SamlClientService;
 import software.wings.service.intfc.SSOService;
@@ -108,8 +107,8 @@ public class SSOResource {
   @ExceptionMetered
   public RestResponse<SSOConfig> uploadOathSettings(
       @QueryParam("accountId") String accountId, OauthSettings oauthSettings) {
-    return new RestResponse<>(
-        ssoService.uploadOauthConfiguration(accountId, oauthSettings.getFilter(), oauthSettings.getAllowedProviders()));
+    return new RestResponse<>(ssoService.uploadOauthConfiguration(
+        accountId, oauthSettings.getFilter(), oauthSettings.getAllowedProviders(), false));
   }
 
   @DELETE
@@ -229,7 +228,7 @@ public class SSOResource {
   @AuthRule(permissionType = LOGGED_IN)
   @ExceptionMetered
   public RestResponse<SSOConfig> getAccountAccessManagementSettings(@PathParam("accountId") String accountId) {
-    return new RestResponse<>(ssoService.getAccountAccessManagementSettings(accountId));
+    return new RestResponse<>(ssoService.getAccountAccessManagementSettings(accountId, false));
   }
 
   @POST
@@ -348,10 +347,11 @@ public class SSOResource {
   @GET
   @Path("saml-login-test")
   public RestResponse<LoginTypeResponse> getSamlLoginTest(@QueryParam("accountId") @NotBlank String accountId) {
-    LoginTypeResponseBuilder builder = LoginTypeResponse.builder();
+    LoginTypeResponse response = LoginTypeResponse.builder().build();
     try {
-      builder.SSORequest(samlClientService.generateTestSamlRequest(accountId));
-      return new RestResponse<>(builder.authenticationMechanism(AuthenticationMechanism.SAML).build());
+      response.setSSORequest(samlClientService.generateTestSamlRequest(accountId));
+      response.setAuthenticationMechanism(AuthenticationMechanism.SAML);
+      return new RestResponse<>(response);
     } catch (Exception e) {
       throw new WingsException(ErrorCode.INVALID_SAML_CONFIGURATION);
     }

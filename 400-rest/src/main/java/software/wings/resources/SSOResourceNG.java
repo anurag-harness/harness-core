@@ -39,7 +39,6 @@ import software.wings.beans.sso.SamlSettings;
 import software.wings.helpers.ext.ldap.LdapResponse;
 import software.wings.security.annotations.AuthRule;
 import software.wings.security.authentication.LoginTypeResponse;
-import software.wings.security.authentication.LoginTypeResponse.LoginTypeResponseBuilder;
 import software.wings.security.authentication.SSOConfig;
 import software.wings.security.saml.SamlClientService;
 import software.wings.service.intfc.SSOService;
@@ -94,7 +93,8 @@ public class SSOResourceNG {
   @AuthRule(permissionType = LOGGED_IN)
   @ExceptionMetered
   public RestResponse<SSOConfig> getAccountAccessManagementSettings(@QueryParam("accountId") String accountId) {
-    return new RestResponse<>(ssoService.getAccountAccessManagementSettings(accountId));
+    return new RestResponse<>(ssoService.getAccountAccessManagementSettings(
+        accountId, false)); // even though NG but there is V2 API so here 'false' is passed
   }
 
   @GET
@@ -112,8 +112,8 @@ public class SSOResourceNG {
   @ExceptionMetered
   public RestResponse<SSOConfig> uploadOathSettings(
       @QueryParam("accountId") String accountId, OauthSettings oauthSettings) {
-    return new RestResponse<>(
-        ssoService.uploadOauthConfiguration(accountId, oauthSettings.getFilter(), oauthSettings.getAllowedProviders()));
+    return new RestResponse<>(ssoService.uploadOauthConfiguration(
+        accountId, oauthSettings.getFilter(), oauthSettings.getAllowedProviders(), true));
   }
 
   @PUT
@@ -240,10 +240,11 @@ public class SSOResourceNG {
   @GET
   @Path("saml-login-test")
   public RestResponse<LoginTypeResponse> getSamlLoginTest(@QueryParam("accountId") @NotBlank String accountId) {
-    LoginTypeResponseBuilder builder = LoginTypeResponse.builder();
+    LoginTypeResponse response = LoginTypeResponse.builder().build();
     try {
-      builder.SSORequest(samlClientService.generateTestSamlRequest(accountId));
-      return new RestResponse<>(builder.authenticationMechanism(AuthenticationMechanism.SAML).build());
+      response.setSSORequest(samlClientService.generateTestSamlRequest(accountId));
+      response.setAuthenticationMechanism(AuthenticationMechanism.SAML);
+      return new RestResponse<>(response);
     } catch (Exception e) {
       throw new WingsException(ErrorCode.INVALID_SAML_CONFIGURATION);
     }
@@ -253,10 +254,11 @@ public class SSOResourceNG {
   @Path("v2/saml-login-test")
   public RestResponse<LoginTypeResponse> getSamlLoginTest(
       @QueryParam("accountId") @NotBlank String accountId, @QueryParam("samlSSOId") @NotNull String samlSSOId) {
-    LoginTypeResponseBuilder builder = LoginTypeResponse.builder();
+    LoginTypeResponse response = LoginTypeResponse.builder().build();
     try {
-      builder.SSORequest(samlClientService.generateTestSamlRequest(accountId, samlSSOId));
-      return new RestResponse<>(builder.authenticationMechanism(AuthenticationMechanism.SAML).build());
+      response.setSSORequest(samlClientService.generateTestSamlRequest(accountId, samlSSOId));
+      response.setAuthenticationMechanism(AuthenticationMechanism.SAML);
+      return new RestResponse<>(response);
     } catch (Exception e) {
       throw new WingsException(ErrorCode.INVALID_SAML_CONFIGURATION);
     }

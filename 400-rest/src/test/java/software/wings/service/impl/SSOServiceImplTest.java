@@ -38,6 +38,7 @@ import static org.mockito.Mockito.when;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.authenticationservice.beans.SAMLProviderType;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.ldap.LdapSettingsWithEncryptedDataDetail;
 import io.harness.eraro.ErrorCode;
@@ -61,7 +62,6 @@ import software.wings.beans.sso.LdapGroupSettings;
 import software.wings.beans.sso.LdapSettings;
 import software.wings.beans.sso.LdapUserSettings;
 import software.wings.beans.sso.OauthSettings;
-import software.wings.beans.sso.SAMLProviderType;
 import software.wings.security.authentication.SSOConfig;
 import software.wings.security.saml.SamlClientService;
 import software.wings.service.impl.security.auth.AuthHandler;
@@ -131,7 +131,7 @@ public class SSOServiceImplTest extends WingsBaseTest {
     // UP = USER_PASSWORD, OA = OAUTH
 
     // UP -> UP + OA - enable oauth
-    ssoService.uploadOauthConfiguration(account.getUuid(), "", Sets.newHashSet(OauthProviderType.values()));
+    ssoService.uploadOauthConfiguration(account.getUuid(), "", Sets.newHashSet(OauthProviderType.values()), false);
     ssoService.setAuthenticationMechanism(account.getUuid(), OAUTH, false);
     account = accountService.get(account.getUuid());
     assertThat(account.getAuthenticationMechanism()).isEqualTo(USER_PASSWORD);
@@ -178,7 +178,7 @@ public class SSOServiceImplTest extends WingsBaseTest {
 
     accountService.save(account, false);
     ssoService.uploadOauthConfiguration(
-        accountId, "", ImmutableSet.of(OauthProviderType.GOOGLE, OauthProviderType.BITBUCKET));
+        accountId, "", ImmutableSet.of(OauthProviderType.GOOGLE, OauthProviderType.BITBUCKET), false);
     SamlClient samlClient = mock(SamlClient.class);
     doReturn(samlClient).when(samlClientService).getSamlClient(anyString(), anyString());
     doReturn("https://harness.onelogin.com").when(samlClient).getIdentityProviderUrl();
@@ -294,12 +294,12 @@ public class SSOServiceImplTest extends WingsBaseTest {
                           .build();
     accountService.save(account, false);
     doNothing().when(authHandler).authorizeAccountPermission(anyList());
-    SSOConfig accountAccessManagementSettings = ssoService.getAccountAccessManagementSettings(account.getUuid());
+    SSOConfig accountAccessManagementSettings = ssoService.getAccountAccessManagementSettings(account.getUuid(), false);
     assertThat(accountAccessManagementSettings).isNotNull();
 
     doThrow(new InvalidRequestException("INVALID")).when(authHandler).authorizeAccountPermission(anyList());
     try {
-      ssoService.getAccountAccessManagementSettings(account.getUuid());
+      ssoService.getAccountAccessManagementSettings(account.getUuid(), false);
     } catch (InvalidRequestException ex) {
       assertThat(ex.getCode()).isEqualTo(ErrorCode.USER_NOT_AUTHORIZED);
     }

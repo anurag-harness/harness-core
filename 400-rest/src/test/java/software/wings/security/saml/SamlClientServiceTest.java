@@ -13,6 +13,7 @@ import static io.harness.rule.OwnerRule.PRATEEK;
 import static software.wings.beans.Account.Builder.anAccount;
 
 import static junit.framework.TestCase.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -20,6 +21,7 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
+import io.harness.authenticationservice.beans.SSORequest;
 import io.harness.category.element.UnitTests;
 import io.harness.rule.Owner;
 
@@ -69,7 +71,8 @@ public class SamlClientServiceTest extends CategoryTest {
                               .withCompanyName(WingsTestConstants.COMPANY_NAME)
                               .build();
 
-    when(ssoSettingService.getSamlSettingsListByAccountId("testAccountId")).thenReturn(getSamlSettingsList(uuidString));
+    when(ssoSettingService.getSamlSettingsByAccountIdAndUuid(anyString(), anyString()))
+        .thenReturn(getSamlSettingsList(uuidString).get(0));
     SamlClient samlClient = samlClientService.getSamlClientFromAccountAndSamlId(testAccount, uuidString);
     assertNotNull(samlClient);
     assertNotNull(samlClient.getSamlRequest());
@@ -88,9 +91,9 @@ public class SamlClientServiceTest extends CategoryTest {
                               .withCompanyName(WingsTestConstants.COMPANY_NAME)
                               .build();
 
-    when(ssoSettingService.getSamlSettingsListByAccountId(testAccountId)).thenReturn(getSamlSettingsList(uuidStr));
+    when(ssoSettingService.getSamlSettingsByAccountId(testAccountId)).thenReturn(getSamlSettingsList(uuidStr).get(0));
     when(accountService.get(testAccountId)).thenReturn(testAccount);
-    SSORequest ssoRequestResult = samlClientService.generateTestSamlRequest(testAccountId, uuidStr);
+    SSORequest ssoRequestResult = samlClientService.generateTestSamlRequest(testAccountId);
     assertNotNull(ssoRequestResult);
     assertNotNull(ssoRequestResult.getIdpRedirectUrl());
   }

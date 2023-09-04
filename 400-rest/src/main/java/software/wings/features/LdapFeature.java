@@ -56,7 +56,7 @@ public class LdapFeature extends AbstractPremiumFeature implements ComplianceByR
     ssoService.deleteLdapSettings(accountId);
 
     if (!accountService.get(accountId).isOauthEnabled() && targetAccountType.equals(AccountType.COMMUNITY)) {
-      ssoService.uploadOauthConfiguration(accountId, "", EnumSet.allOf(OauthProviderType.class));
+      ssoService.uploadOauthConfiguration(accountId, "", EnumSet.allOf(OauthProviderType.class), false);
       ssoService.setAuthenticationMechanism(accountId, AuthenticationMechanism.OAUTH, false);
     }
 
